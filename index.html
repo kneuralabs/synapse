@@ -431,6 +431,54 @@ let selectedWS = new Set();
 let chatHistory = [];
 let docs = [];
 
+// ── API CONFIG ──
+// Production: set API_PROXY to your backend endpoint that holds the Anthropic
+// API key server-side (e.g. a Cloudflare Worker or Supabase edge function).
+// Shipping a key in client-side code exposes it to anyone who opens DevTools.
+const API_PROXY = '';
+const MODEL = 'claude-sonnet-4-6';
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function getApiKey() {
+  let key = localStorage.getItem('anthropic_api_key');
+  if(!key){
+    key = window.prompt('Enter your Anthropic API key.\nIt is stored only in this browser (localStorage) and sent only to api.anthropic.com.');
+    if(key) localStorage.setItem('anthropic_api_key', key.trim());
+  }
+  return key ? key.trim() : null;
+}
+
+async function callClaude(body) {
+  const url = API_PROXY || 'https://api.anthropic.com/v1/messages';
+  const headers = {'Content-Type':'application/json'};
+  if(!API_PROXY){
+    const key = getApiKey();
+    if(!key) throw new Error('No API key provided.');
+    headers['x-api-key'] = key;
+    headers['anthropic-version'] = '2023-06-01';
+    // Required for browser-origin requests; the name is a deliberate warning
+    // that keys in browsers are visible to end users — use API_PROXY in prod.
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  }
+  let res;
+  try {
+    res = await fetch(url, {method:'POST', headers, body:JSON.stringify({model:MODEL, ...body})});
+  } catch(e) {
+    throw new Error('Network error — could not reach the AI service.');
+  }
+  const data = await res.json().catch(()=>null);
+  if(!res.ok){
+    if(res.status===401) localStorage.removeItem('anthropic_api_key'); // bad key — re-prompt next time
+    throw new Error(data?.error?.message || `AI service error (HTTP ${res.status})`);
+  }
+  const text = data?.content?.find(b=>b.type==='text')?.text;
+  if(!text) throw new Error('The model returned an empty response.');
+  return text;
+}
+
 // ── NAV ──
 function nav(id, btn) {
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -523,20 +571,16 @@ Format phases as: PHASE_START: [Phase Name] | [Duration] | [Key milestone] :PHAS
 Keep it sharp, consulting-grade, and specific to the industry.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-    });
-    const data = await res.json();
-    const text = data.content?.[0]?.text||'Unable to generate plan.';
+    const text = await callClaude({max_tokens:2000, messages:[{role:'user',content:prompt}]});
     streamText(body, formatStrategy(text));
   } catch(e) {
-    body.innerHTML = `<div style="color:var(--accent)">Unable to connect to AI service. Check your API key and network.</div>`;
+    body.innerHTML = `<div style="color:var(--accent)">${esc(e.message)}</div>`;
   }
 }
 
 function formatStrategy(text) {
+  // Escape model output before injecting as HTML
+  text = esc(text);
   // Replace PHASE markers with styled divs
   text = text.replace(/PHASE_START:\s*(.+?)\s*:PHASE_END/g, (_,c)=>{
     const parts = c.split('|').map(s=>s.trim());
@@ -656,7 +700,7 @@ async function sendChat() {
   if(!text) return;
   input.value = '';
 
-  appendMsg('user', text);
+  appendMsg('user', esc(text));
   chatHistory.push({role:'user',content:text});
 
   const thinkingEl = appendMsg('ai', '<div class="loading-row"><div class="spinner"></div> Thinking…</div>');
@@ -673,22 +717,16 @@ Active projects: GlobalBank DX (Financial Services, 68% complete), RetailCo Comm
 Be sharp, specific, consulting-grade. Use concrete examples. Keep responses focused and useful. Format with clear sections when helpful.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        system: systemPrompt,
-        messages: chatHistory
-      })
+    const reply = await callClaude({
+      max_tokens:1000,
+      system: systemPrompt,
+      messages: chatHistory
     });
-    const data = await res.json();
-    const reply = data.content?.[0]?.text||'Sorry, I could not respond.';
     chatHistory.push({role:'assistant',content:reply});
-    thinkingEl.querySelector('.msg-bubble').innerHTML = reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+    thinkingEl.querySelector('.msg-bubble').innerHTML = esc(reply).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
   } catch(e) {
-    thinkingEl.querySelector('.msg-bubble').innerHTML = '<span style="color:var(--accent)">Connection error. Check API connectivity.</span>';
+    chatHistory.pop(); // drop the unanswered user turn so a retry resends cleanly
+    thinkingEl.querySelector('.msg-bubble').innerHTML = `<span style="color:var(--accent)">${esc(e.message)}</span>`;
   }
 
   document.getElementById('chat-msgs').scrollTop = 9999;
@@ -754,49 +792,44 @@ async function analyzeDoc(file) {
   status.textContent = `Analyzing ${file.name}…`;
   grid.innerHTML=''; prose.innerHTML='';
 
-  // BUG 5 FIX: always read as text; base64 is meaningless to the AI
-  const text = await new Promise(res=>{
+  // Only plain-text formats can be read meaningfully in the browser; PDFs and
+  // DOCX read via readAsText produce binary garbage that misleads the model.
+  const isTextFile = /^text\//.test(file.type) || /\.(txt|md|csv|json)$/i.test(file.name);
+  const text = isTextFile ? await new Promise(res=>{
     const r = new FileReader();
     r.onload = e => res((e.target.result||'').substring(0,3000)||'[Empty file]');
     r.onerror = () => res('[Could not read file]');
     r.readAsText(file);
-  });
+  }) : '[Binary document — content could not be extracted in the browser. Base your analysis on the filename and say so in the summary.]';
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:1000,
-        messages:[{role:'user',content:`Analyze this document for a consulting engagement. Extract key insights, identify transformation opportunities, and map to Levitate workstreams (Ecosystem Orchestration, Business Transformation, Digital Products, Marketing & Content, Commerce, Learning).
+    const raw0 = await callClaude({
+      max_tokens:1000,
+      messages:[{role:'user',content:`Analyze this document for a consulting engagement. Extract key insights, identify transformation opportunities, and map to Levitate workstreams (Ecosystem Orchestration, Business Transformation, Digital Products, Marketing & Content, Commerce, Learning).
 
 Filename: ${file.name}
 Content preview: ${text.substring(0,1500)}
 
 Respond ONLY with valid JSON (no markdown, no backticks):
 {"summary":"2-3 sentence summary","sentiment":"Positive|Neutral|Concern","complexity":"Low|Medium|High","workstreams":["ws1","ws2"],"insights":["insight1","insight2","insight3"],"opportunities":["opp1","opp2"],"risks":["risk1"]}`}]
-      })
     });
-    const data = await res.json();
-    let raw = data.content?.[0]?.text||'{}';
-    raw = raw.replace(/```json|```/g,'').trim();
-    const j = JSON.parse(raw);
+    const raw = raw0.replace(/```json|```/g,'').trim();
+    const j = JSON.parse(raw.substring(raw.indexOf('{'), raw.lastIndexOf('}')+1));
 
     status.textContent = `Analysis complete — ${file.name}`;
     grid.innerHTML = `
-      <div class="insight-card"><div class="insight-label">Summary</div><div class="insight-val">${j.summary||'—'}</div></div>
-      <div class="insight-card"><div class="insight-label">Sentiment</div><div class="insight-val">${j.sentiment||'—'}</div></div>
-      <div class="insight-card"><div class="insight-label">Complexity</div><div class="insight-val">${j.complexity||'—'}</div></div>
-      <div class="insight-card"><div class="insight-label">Relevant Workstreams</div><div class="insight-val">${(j.workstreams||[]).join(', ')||'—'}</div></div>`;
+      <div class="insight-card"><div class="insight-label">Summary</div><div class="insight-val">${esc(j.summary||'—')}</div></div>
+      <div class="insight-card"><div class="insight-label">Sentiment</div><div class="insight-val">${esc(j.sentiment||'—')}</div></div>
+      <div class="insight-card"><div class="insight-label">Complexity</div><div class="insight-val">${esc(j.complexity||'—')}</div></div>
+      <div class="insight-card"><div class="insight-label">Relevant Workstreams</div><div class="insight-val">${esc((j.workstreams||[]).join(', ')||'—')}</div></div>`;
 
     prose.innerHTML = `
-      ${j.insights?.length?`<div style="margin-bottom:16px"><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--periwinkle);margin-bottom:8px">Key Insights</div>${j.insights.map(i=>`<div class="activity-item"><div class="act-dot"></div><div class="act-body">${i}</div></div>`).join('')}</div>`:''}
-      ${j.opportunities?.length?`<div style="margin-bottom:16px"><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px">Opportunities</div>${j.opportunities.map(o=>`<div class="activity-item"><div class="act-dot" style="background:var(--green)"></div><div class="act-body">${o}</div></div>`).join('')}</div>`:''}
-      ${j.risks?.length?`<div><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Risks to Address</div>${j.risks.map(r=>`<div class="activity-item"><div class="act-dot" style="background:var(--accent)"></div><div class="act-body">${r}</div></div>`).join('')}</div>`:''}`;
+      ${j.insights?.length?`<div style="margin-bottom:16px"><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--periwinkle);margin-bottom:8px">Key Insights</div>${j.insights.map(i=>`<div class="activity-item"><div class="act-dot"></div><div class="act-body">${esc(i)}</div></div>`).join('')}</div>`:''}
+      ${j.opportunities?.length?`<div style="margin-bottom:16px"><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px">Opportunities</div>${j.opportunities.map(o=>`<div class="activity-item"><div class="act-dot" style="background:var(--green)"></div><div class="act-body">${esc(o)}</div></div>`).join('')}</div>`:''}
+      ${j.risks?.length?`<div><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Risks to Address</div>${j.risks.map(r=>`<div class="activity-item"><div class="act-dot" style="background:var(--accent)"></div><div class="act-body">${esc(r)}</div></div>`).join('')}</div>`:''}`;
   } catch(e) {
-    status.textContent = 'Analysis error — check connection.';
-    prose.innerHTML = `<div style="color:var(--accent);font-size:.82rem">Could not parse AI response. ${e.message}</div>`;
+    status.textContent = 'Analysis error.';
+    prose.innerHTML = `<div style="color:var(--accent);font-size:.82rem">${esc(e.message)}</div>`;
   }
 }
 
