@@ -476,7 +476,9 @@ async function callClaude(body) {
   }
   const text = data?.content?.find(b=>b.type==='text')?.text;
   if(!text) throw new Error('The model returned an empty response.');
-  return text;
+  // stop_reason === 'max_tokens' means the reply was cut off mid-thought;
+  // callers must surface this instead of presenting truncated output as complete.
+  return {text, truncated: data.stop_reason === 'max_tokens'};
 }
 
 // ── NAV ──
@@ -533,7 +535,10 @@ function selectWS(name) {
   renderWsChips();
 }
 
+let strategyBusy = false;
+
 async function generateStrategy() {
+  if(strategyBusy){toast('A plan is already generating — hang tight.');return;}
   const client = document.getElementById('f-client').value.trim();
   const objective = document.getElementById('f-objective').value.trim();
   const industry = document.getElementById('f-industry').value;
@@ -570,19 +575,23 @@ Structure your response as:
 Format phases as: PHASE_START: [Phase Name] | [Duration] | [Key milestone] :PHASE_END
 Keep it sharp, consulting-grade, and specific to the industry.`;
 
+  strategyBusy = true;
   try {
-    const text = await callClaude({max_tokens:2000, messages:[{role:'user',content:prompt}]});
-    streamText(body, formatStrategy(text));
+    const {text, truncated} = await callClaude({max_tokens:4000, messages:[{role:'user',content:prompt}]});
+    const full = truncated ? text + '\n\n[The plan was cut off at the length limit — retry or narrow the brief.]' : text;
+    streamText(body, formatStrategy(full));
   } catch(e) {
     body.innerHTML = `<div style="color:var(--accent)">${esc(e.message)}</div>`;
+  } finally {
+    strategyBusy = false;
   }
 }
 
 function formatStrategy(text) {
   // Escape model output before injecting as HTML
   text = esc(text);
-  // Replace PHASE markers with styled divs
-  text = text.replace(/PHASE_START:\s*(.+?)\s*:PHASE_END/g, (_,c)=>{
+  // Replace PHASE markers with styled divs ([\s\S] — the model may wrap the line)
+  text = text.replace(/PHASE_START:\s*([\s\S]+?)\s*:PHASE_END/g, (_,c)=>{
     const parts = c.split('|').map(s=>s.trim());
     return `<div class="phase"><h4>${parts[0]||''} ${parts[1]?'· '+parts[1]:''}</h4>${parts[2]||''}</div>`;
   });
@@ -593,27 +602,33 @@ function formatStrategy(text) {
   return text;
 }
 
+let _streamGen = 0;
+
 function streamText(el, html) {
-  const cursor = '<span class="streaming-cursor"></span>';
-  el.innerHTML = cursor;
+  // Generation token: starting a new stream invalidates any in-flight one,
+  // so two runs never interleave writes into the same element.
+  const gen = ++_streamGen;
   const div = document.createElement('div');
   div.innerHTML = html;
   const nodes = [];
   function collectText(node) {
-    if(node.nodeType===3) nodes.push({type:'text',text:node.textContent,parent:node.parentNode,ref:node});
+    if(node.nodeType===3) nodes.push({type:'text',text:node.textContent});
     else { nodes.push({type:'open',node:node.cloneNode(false)}); node.childNodes.forEach(collectText); nodes.push({type:'close'}); }
   }
   div.childNodes.forEach(collectText);
-  
+
   el.innerHTML = '';
   let stack = [el]; let i = 0;
-  const cur = document.createElement('span'); cur.className='streaming-cursor'; 
+  const cur = document.createElement('span'); cur.className='streaming-cursor';
+  el.appendChild(cur);
   function step() {
-    if(i>=nodes.length){stack[stack.length-1].appendChild(cur);return;}
+    if(gen!==_streamGen){cur.remove();return;}
+    if(i>=nodes.length){cur.remove();return;}
     const n = nodes[i++];
     if(n.type==='text'){const t=document.createTextNode(n.text);stack[stack.length-1].appendChild(t);}
     else if(n.type==='open'){const newEl=n.node.cloneNode(false);stack[stack.length-1].appendChild(newEl);stack.push(newEl);}
     else if(n.type==='close'&&stack.length>1){stack.pop();}
+    stack[stack.length-1].appendChild(cur); // keep the cursor at the live insertion point
     setTimeout(step, i%3===0?12:0);
   }
   step();
@@ -694,16 +709,21 @@ function preFillChat(text) {
   document.getElementById('chat-input').value = text;
 }
 
+let chatBusy = false;
+
 async function sendChat() {
+  if(chatBusy){toast('Levitate is still responding…');return;} // input is kept so nothing is lost
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if(!text) return;
   input.value = '';
 
   appendMsg('user', esc(text));
-  chatHistory.push({role:'user',content:text});
+  const userTurn = {role:'user',content:text};
+  chatHistory.push(userTurn);
 
   const thinkingEl = appendMsg('ai', '<div class="loading-row"><div class="spinner"></div> Thinking…</div>');
+  chatBusy = true;
 
   const systemPrompt = `You are Levitate AI, the intelligent assistant embedded in the Levitate Experience Intelligence Platform. You help consultants and enterprise clients with:
 - Transformation strategy across 6 workstreams: Ecosystem Orchestration, Business Transformation, Digital Products & Platforms, Marketing & Content, Commerce, Learning
@@ -717,19 +737,26 @@ Active projects: GlobalBank DX (Financial Services, 68% complete), RetailCo Comm
 Be sharp, specific, consulting-grade. Use concrete examples. Keep responses focused and useful. Format with clear sections when helpful.`;
 
   try {
-    const reply = await callClaude({
+    const {text: reply, truncated} = await callClaude({
       max_tokens:1000,
       system: systemPrompt,
       messages: chatHistory
     });
     chatHistory.push({role:'assistant',content:reply});
-    thinkingEl.querySelector('.msg-bubble').innerHTML = esc(reply).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+    const shown = truncated ? reply + '\n\n[Reply was cut off — ask me to continue.]' : reply;
+    thinkingEl.querySelector('.msg-bubble').innerHTML = esc(shown).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
   } catch(e) {
-    chatHistory.pop(); // drop the unanswered user turn so a retry resends cleanly
+    // Drop the unanswered user turn by reference (not pop) so a retry resends
+    // cleanly even if other turns were appended in the meantime.
+    const idx = chatHistory.indexOf(userTurn);
+    if(idx > -1) chatHistory.splice(idx, 1);
     thinkingEl.querySelector('.msg-bubble').innerHTML = `<span style="color:var(--accent)">${esc(e.message)}</span>`;
+  } finally {
+    chatBusy = false;
   }
 
-  document.getElementById('chat-msgs').scrollTop = 9999;
+  const msgs = document.getElementById('chat-msgs');
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 function appendMsg(role, html) {
@@ -783,7 +810,12 @@ function analyzeDocById(id) {
   if(doc) analyzeDoc(doc.file);
 }
 
+// The analysis panel is a single shared surface — when several files are
+// dropped at once, only the most recently started analysis may write to it.
+let _analysisToken = 0;
+
 async function analyzeDoc(file) {
+  const tok = ++_analysisToken;
   const panel = document.getElementById('doc-analysis');
   const status = document.getElementById('analysis-status');
   const grid = document.getElementById('insight-grid');
@@ -803,18 +835,32 @@ async function analyzeDoc(file) {
   }) : '[Binary document — content could not be extracted in the browser. Base your analysis on the filename and say so in the summary.]';
 
   try {
-    const raw0 = await callClaude({
+    // Structured outputs (output_config.format) make the API guarantee
+    // schema-valid JSON — no fence-stripping or brace-hunting needed.
+    const {text: raw, truncated} = await callClaude({
       max_tokens:1000,
+      output_config:{format:{type:'json_schema', schema:{
+        type:'object',
+        properties:{
+          summary:{type:'string', description:'2-3 sentence summary'},
+          sentiment:{type:'string', enum:['Positive','Neutral','Concern']},
+          complexity:{type:'string', enum:['Low','Medium','High']},
+          workstreams:{type:'array', items:{type:'string'}},
+          insights:{type:'array', items:{type:'string'}},
+          opportunities:{type:'array', items:{type:'string'}},
+          risks:{type:'array', items:{type:'string'}}
+        },
+        required:['summary','sentiment','complexity','workstreams','insights','opportunities','risks'],
+        additionalProperties:false
+      }}},
       messages:[{role:'user',content:`Analyze this document for a consulting engagement. Extract key insights, identify transformation opportunities, and map to Levitate workstreams (Ecosystem Orchestration, Business Transformation, Digital Products, Marketing & Content, Commerce, Learning).
 
 Filename: ${file.name}
-Content preview: ${text.substring(0,1500)}
-
-Respond ONLY with valid JSON (no markdown, no backticks):
-{"summary":"2-3 sentence summary","sentiment":"Positive|Neutral|Concern","complexity":"Low|Medium|High","workstreams":["ws1","ws2"],"insights":["insight1","insight2","insight3"],"opportunities":["opp1","opp2"],"risks":["risk1"]}`}]
+Content preview: ${text.substring(0,1500)}`}]
     });
-    const raw = raw0.replace(/```json|```/g,'').trim();
-    const j = JSON.parse(raw.substring(raw.indexOf('{'), raw.lastIndexOf('}')+1));
+    if(tok!==_analysisToken) return; // a newer analysis owns the panel now
+    if(truncated) throw new Error('The analysis was cut off — try a smaller document.');
+    const j = JSON.parse(raw);
 
     status.textContent = `Analysis complete — ${file.name}`;
     grid.innerHTML = `
@@ -828,6 +874,7 @@ Respond ONLY with valid JSON (no markdown, no backticks):
       ${j.opportunities?.length?`<div style="margin-bottom:16px"><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px">Opportunities</div>${j.opportunities.map(o=>`<div class="activity-item"><div class="act-dot" style="background:var(--green)"></div><div class="act-body">${esc(o)}</div></div>`).join('')}</div>`:''}
       ${j.risks?.length?`<div><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Risks to Address</div>${j.risks.map(r=>`<div class="activity-item"><div class="act-dot" style="background:var(--accent)"></div><div class="act-body">${esc(r)}</div></div>`).join('')}</div>`:''}`;
   } catch(e) {
+    if(tok!==_analysisToken) return; // don't let a stale failure overwrite a live analysis
     status.textContent = 'Analysis error.';
     prose.innerHTML = `<div style="color:var(--accent);font-size:.82rem">${esc(e.message)}</div>`;
   }
