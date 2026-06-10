@@ -231,7 +231,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
   <button class="sb-item active" onclick="nav('dashboard',this)"><span class="icon">⊞</span>Dashboard</button>
   <button id="nav-strategy" class="sb-item" onclick="nav('strategy',this)"><span class="icon">◈</span>Strategy Builder</button>
   <button class="sb-item" onclick="nav('projects',this)"><span class="icon">⬡</span>Projects<span class="badge">4</span></button>
-  <button class="sb-item" onclick="nav('chat',this)"><span class="icon">✦</span>AI Assistant</button>
+  <button id="nav-chat" class="sb-item" onclick="nav('chat',this)"><span class="icon">✦</span>AI Assistant</button>
   <button class="sb-item" onclick="nav('docs',this)"><span class="icon">⟁</span>Documents</button>
 
   <div class="sb-section">Workstreams</div>
@@ -578,19 +578,19 @@ Keep it sharp, consulting-grade, and specific to the industry.`;
   }
 }
 
+// Escape model output, then render the minimal markdown subset we prompt for.
+function mdLite(text) {
+  return esc(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+}
+
 function formatStrategy(text) {
-  // Escape model output before injecting as HTML
   text = esc(text);
   // Replace PHASE markers with styled divs
   text = text.replace(/PHASE_START:\s*(.+?)\s*:PHASE_END/g, (_,c)=>{
     const parts = c.split('|').map(s=>s.trim());
     return `<div class="phase"><h4>${parts[0]||''} ${parts[1]?'· '+parts[1]:''}</h4>${parts[2]||''}</div>`;
   });
-  // Bold markdown
-  text = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
-  // Newlines
-  text = text.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
-  return text;
+  return text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
 }
 
 function streamText(el, html) {
@@ -667,7 +667,7 @@ function openProject(id) {
     <div style="font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;margin-bottom:10px;color:var(--slate);letter-spacing:.08em;text-transform:uppercase">Active Workstreams</div>
     ${p.ws.map(w=>{const ws=WORKSTREAMS.find(x=>x.name===w)||{color:'#6C7FFF'};return`<div class="ws-row"><div class="ws-dot" style="background:${ws.color}"></div><div>${w}</div></div>`}).join('')}
     <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-p" onclick="nav('chat',document.querySelectorAll('.sb-item')[3]);preFillChat('Tell me about the ${p.name} engagement')">Ask AI about this</button>
+      <button class="btn btn-p" onclick="nav('chat',document.getElementById('nav-chat'));preFillChat('Tell me about the ${p.name} engagement')">Ask AI about this</button>
       <button class="btn btn-o" onclick="document.getElementById('proj-detail').classList.remove('show')">Close</button>
     </div>`;
   d.classList.add('show');
@@ -675,7 +675,7 @@ function openProject(id) {
 }
 
 function newProject() {
-  nav('strategy', document.querySelectorAll('.sb-item')[1]);
+  nav('strategy', document.getElementById('nav-strategy'));
   toast('Start a new brief to create a project.');
 }
 
@@ -694,10 +694,13 @@ function preFillChat(text) {
   document.getElementById('chat-input').value = text;
 }
 
+let chatBusy = false;
+
 async function sendChat() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
-  if(!text) return;
+  if(!text || chatBusy) return; // a pending request would interleave chatHistory
+  chatBusy = true;
   input.value = '';
 
   appendMsg('user', esc(text));
@@ -723,13 +726,16 @@ Be sharp, specific, consulting-grade. Use concrete examples. Keep responses focu
       messages: chatHistory
     });
     chatHistory.push({role:'assistant',content:reply});
-    thinkingEl.querySelector('.msg-bubble').innerHTML = esc(reply).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+    thinkingEl.querySelector('.msg-bubble').innerHTML = mdLite(reply);
   } catch(e) {
     chatHistory.pop(); // drop the unanswered user turn so a retry resends cleanly
     thinkingEl.querySelector('.msg-bubble').innerHTML = `<span style="color:var(--accent)">${esc(e.message)}</span>`;
+  } finally {
+    chatBusy = false;
   }
 
-  document.getElementById('chat-msgs').scrollTop = 9999;
+  const msgs = document.getElementById('chat-msgs');
+  msgs.scrollTop = msgs.scrollHeight;
 }
 
 function appendMsg(role, html) {
@@ -752,12 +758,13 @@ function handleDrop(e) {
 let _docIdCounter = 0;
 
 function handleFiles(files) {
-  [...files].forEach(f=>{
+  const added = [...files].map(f=>{
     const id = ++_docIdCounter;
     docs.push({id, name:f.name, size:(f.size/1024).toFixed(0)+'KB', type:f.type, file:f});
-    renderDocs();
-    analyzeDocById(id);
+    return id;
   });
+  renderDocs();
+  added.forEach(analyzeDocById);
 }
 
 function renderDocs() {
@@ -765,7 +772,7 @@ function renderDocs() {
   document.getElementById('doc-list').innerHTML = docs.map(d=>`
     <div class="doc-item">
       <div class="doc-icon">${icons[d.type]||'📄'}</div>
-      <div><div class="doc-name">${d.name.replace(/</g,'&lt;')}</div><div class="doc-meta">${d.size}</div></div>
+      <div><div class="doc-name">${esc(d.name)}</div><div class="doc-meta">${d.size}</div></div>
       <div class="doc-actions">
         <button class="doc-btn" onclick="analyzeDocById(${d.id})">Analyze</button>
         <button class="doc-btn" onclick="removeDoc(${d.id})">Remove</button>
