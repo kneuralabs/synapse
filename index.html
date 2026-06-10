@@ -5,218 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Levitate — Experience Intelligence Platform</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#07091C;--surface:#0D1025;--card:#111528;--card2:#161A35;
-  --periwinkle:#6C7FFF;--periwinkle-dim:rgba(108,127,255,.12);--periwinkle-glow:rgba(108,127,255,.25);
-  --chalk:#EEEDF8;--slate:#7A82AA;--border:rgba(108,127,255,.15);
-  --accent:#FF6B6B;--green:#4FFFB0;--sidebar:220px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden}
-body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:var(--chalk);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-
-/* ── TOPBAR ── */
-#topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;z-index:50}
-.tb-logo{font-family:'Inter',sans-serif;font-weight:800;font-size:1.15rem;letter-spacing:-.03em;color:var(--chalk);white-space:nowrap}
-.tb-logo span{color:var(--periwinkle)}
-.tb-spacer{flex:1}
-.tb-badge{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--periwinkle);border:1px solid var(--border);padding:4px 10px;border-radius:100px}
-.tb-avatar{width:32px;height:32px;border-radius:50%;background:var(--periwinkle-dim);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--periwinkle);cursor:pointer;font-family:'Inter',sans-serif;font-weight:700}
-.ham{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:4px}
-.ham span{width:20px;height:2px;background:var(--chalk);border-radius:2px}
-
-/* ── LAYOUT ── */
-#shell{display:flex;flex:1;overflow:hidden}
-
-/* ── SIDEBAR ── */
-#sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:transform .3s}
-.sb-section{padding:16px 12px 8px;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--slate)}
-.sb-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:6px;cursor:pointer;font-size:.82rem;color:var(--slate);transition:background .15s,color .15s;margin:1px 8px;border:none;background:none;width:calc(100% - 16px);text-align:left}
-.sb-item .icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
-.sb-item:hover{background:var(--periwinkle-dim);color:var(--chalk)}
-.sb-item.active{background:var(--periwinkle-dim);color:var(--chalk);font-weight:500}
-.sb-item .badge{margin-left:auto;background:var(--periwinkle);color:#fff;font-size:.6rem;padding:2px 6px;border-radius:100px;font-family:'Inter',sans-serif;font-weight:700}
-.sb-bottom{margin-top:auto;padding:12px;border-top:1px solid var(--border)}
-.sb-user{display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;cursor:pointer}
-.sb-user:hover{background:var(--periwinkle-dim)}
-.sb-user-info{flex:1;min-width:0}
-.sb-user-name{font-size:.78rem;color:var(--chalk);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sb-user-role{font-size:.66rem;color:var(--slate)}
-
-/* ── MAIN ── */
-#main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
-
-/* ── VIEWS ── */
-.view{display:none;flex:1;flex-direction:column}
-.view.active{display:flex}
-
-/* ── DASHBOARD ── */
-#v-dashboard{padding:32px;gap:24px}
-.dash-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px}
-.dash-title{font-family:'Inter',sans-serif;font-weight:800;font-size:1.6rem;letter-spacing:-.03em}
-.dash-title span{color:var(--periwinkle)}
-.dash-sub{font-size:.82rem;color:var(--slate);margin-top:4px}
-.btn{font-family:'Inter',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;padding:10px 20px;border-radius:4px;cursor:pointer;border:none;transition:transform .15s,box-shadow .15s}
-.btn-p{background:var(--periwinkle);color:#fff}
-.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--periwinkle-glow)}
-.btn-o{background:transparent;color:var(--chalk);border:1px solid var(--border)}
-.btn-o:hover{border-color:var(--periwinkle);color:var(--periwinkle)}
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
-.kpi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;transition:border-color .2s}
-.kpi:hover{border-color:var(--periwinkle)}
-.kpi-val{font-family:'Inter',sans-serif;font-weight:800;font-size:1.9rem;letter-spacing:-.04em}
-.kpi-val .up{color:var(--green);font-size:.75rem;margin-left:6px}
-.kpi-val .down{color:var(--accent);font-size:.75rem;margin-left:6px}
-.kpi-lbl{font-size:.72rem;color:var(--slate);margin-top:4px;letter-spacing:.04em}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px}
-.panel-title{font-family:'Inter',sans-serif;font-weight:700;font-size:.85rem;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
-.panel-title .eyebrow{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--periwinkle)}
-.ws-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
-.ws-row:last-child{border-bottom:none}
-.ws-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.ws-name{font-size:.82rem;flex:1}
-.ws-bar-wrap{width:80px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-.ws-bar{height:100%;background:var(--periwinkle);border-radius:2px;transition:width .8s ease}
-.ws-pct{font-size:.72rem;color:var(--slate);width:30px;text-align:right}
-.activity-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.8rem}
-.activity-item:last-child{border-bottom:none}
-.act-dot{width:6px;height:6px;border-radius:50%;background:var(--periwinkle);margin-top:5px;flex-shrink:0}
-.act-body{flex:1;color:var(--slate);line-height:1.5}
-.act-body strong{color:var(--chalk)}
-.act-time{font-size:.68rem;color:var(--slate);white-space:nowrap}
-
-/* ── STRATEGY ── */
-#v-strategy{padding:32px;gap:24px}
-.brief-panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px}
-.brief-panel h3{font-family:'Inter',sans-serif;font-weight:700;font-size:1rem;margin-bottom:20px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field.full{grid-column:1/-1}
-.field label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)}
-.field input,.field select,.field textarea{background:var(--surface);border:1px solid var(--border);color:var(--chalk);padding:10px 14px;border-radius:4px;font-family:'Inter',sans-serif;font-size:.85rem;outline:none;transition:border-color .2s;resize:vertical}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--periwinkle)}
-.field select option{background:var(--card)}
-.ws-chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:6px 14px;border-radius:100px;font-size:.75rem;cursor:pointer;border:1px solid var(--border);color:var(--slate);transition:all .15s;background:none}
-.chip.on{background:var(--periwinkle-dim);border-color:var(--periwinkle);color:var(--chalk)}
-.result-panel{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px;display:none}
-.result-panel.show{display:block}
-.result-panel h3{font-family:'Inter',sans-serif;font-weight:700;font-size:1rem;margin-bottom:16px;color:var(--periwinkle)}
-.ai-prose{font-size:.85rem;color:var(--slate);line-height:1.85}
-.ai-prose strong{color:var(--chalk)}
-.ai-prose .phase{background:var(--periwinkle-dim);border-left:3px solid var(--periwinkle);padding:12px 16px;border-radius:0 6px 6px 0;margin:12px 0;font-size:.82rem}
-.ai-prose .phase h4{color:var(--periwinkle);font-family:'Inter',sans-serif;font-size:.8rem;margin-bottom:4px}
-.streaming-cursor{display:inline-block;width:2px;height:14px;background:var(--periwinkle);animation:blink .7s steps(1) infinite;vertical-align:middle;margin-left:2px}
-@keyframes blink{50%{opacity:0}}
-.loading-row{display:flex;align-items:center;gap:12px;color:var(--slate);font-size:.82rem}
-.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--periwinkle);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── PROJECTS ── */
-#v-projects{padding:32px;gap:20px}
-.proj-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.proj-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;cursor:pointer;transition:border-color .2s,transform .15s}
-.proj-card:hover{border-color:var(--periwinkle);transform:translateY(-2px)}
-.proj-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
-.proj-status{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:100px}
-.status-active{background:rgba(79,255,176,.1);color:var(--green);border:1px solid rgba(79,255,176,.2)}
-.status-plan{background:rgba(108,127,255,.1);color:var(--periwinkle);border:1px solid var(--border)}
-.status-review{background:rgba(255,107,107,.1);color:var(--accent);border:1px solid rgba(255,107,107,.2)}
-.proj-name{font-family:'Inter',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:6px}
-.proj-client{font-size:.75rem;color:var(--slate)}
-.proj-progress{margin-top:14px}
-.prog-row{display:flex;justify-content:space-between;font-size:.7rem;color:var(--slate);margin-bottom:6px}
-.prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
-.prog-fill{height:100%;background:var(--periwinkle);border-radius:2px}
-.proj-ws{display:flex;flex-wrap:wrap;gap:4px;margin-top:12px}
-.ws-pill{font-size:.63rem;padding:2px 8px;border-radius:100px;background:var(--periwinkle-dim);color:var(--periwinkle);border:1px solid var(--border)}
-.proj-detail{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px;display:none}
-.proj-detail.show{display:block}
-
-/* ── CHAT ── */
-#v-chat{display:none;flex-direction:column;height:100%}
-#v-chat.active{display:flex}
-.chat-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
-.chat-avatar{width:36px;height:36px;border-radius:8px;background:var(--periwinkle-dim);display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:1px solid var(--border)}
-.chat-title{font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem}
-.chat-subtitle{font-size:.72rem;color:var(--slate)}
-.chat-online{width:7px;height:7px;border-radius:50%;background:var(--green);margin-left:auto;box-shadow:0 0 0 2px rgba(79,255,176,.2)}
-.chat-msgs{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px}
-.msg{display:flex;gap:10px;max-width:80%}
-.msg.user{align-self:flex-end;flex-direction:row-reverse}
-.msg-bubble{padding:12px 16px;border-radius:8px;font-size:.85rem;line-height:1.65}
-.msg.ai .msg-bubble{background:var(--card);border:1px solid var(--border);color:var(--chalk);border-radius:2px 8px 8px 8px}
-.msg.user .msg-bubble{background:var(--periwinkle);color:#fff;border-radius:8px 2px 8px 8px}
-.msg-av{width:30px;height:30px;border-radius:6px;background:var(--periwinkle-dim);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;border:1px solid var(--border);font-family:'Inter',sans-serif;font-weight:700;color:var(--periwinkle)}
-.msg.user .msg-av{background:var(--periwinkle);color:#fff;border-color:var(--periwinkle)}
-.chat-bar{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
-.chat-input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--chalk);padding:12px 16px;border-radius:6px;font-family:'Inter',sans-serif;font-size:.85rem;outline:none;resize:none;max-height:120px;transition:border-color .2s;line-height:1.5}
-.chat-input:focus{border-color:var(--periwinkle)}
-.chat-send{background:var(--periwinkle);border:none;border-radius:6px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:opacity .2s;flex-shrink:0}
-.chat-send:hover{opacity:.85}
-.chat-send svg{fill:white}
-.chat-suggestions{display:flex;flex-wrap:wrap;gap:8px;padding:0 24px 12px}
-.sug-chip{font-size:.75rem;padding:6px 12px;border-radius:100px;border:1px solid var(--border);color:var(--slate);cursor:pointer;background:none;transition:all .15s}
-.sug-chip:hover{border-color:var(--periwinkle);color:var(--chalk)}
-
-/* ── DOCS ── */
-#v-docs{padding:32px;gap:20px}
-.upload-zone{background:var(--card);border:2px dashed var(--border);border-radius:8px;padding:48px;text-align:center;cursor:pointer;transition:border-color .2s}
-.upload-zone:hover,.upload-zone.drag{border-color:var(--periwinkle);background:var(--periwinkle-dim)}
-.upload-zone svg{opacity:.4;margin-bottom:12px}
-.upload-title{font-family:'Inter',sans-serif;font-weight:700;font-size:.95rem;margin-bottom:6px}
-.upload-sub{font-size:.78rem;color:var(--slate)}
-.doc-list{display:flex;flex-direction:column;gap:10px}
-.doc-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 20px;display:flex;align-items:center;gap:14px;transition:border-color .2s}
-.doc-item:hover{border-color:var(--periwinkle)}
-.doc-icon{width:36px;height:36px;border-radius:6px;background:var(--periwinkle-dim);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
-.doc-name{font-size:.85rem;font-weight:500;flex:1}
-.doc-meta{font-size:.72rem;color:var(--slate)}
-.doc-actions{display:flex;gap:8px}
-.doc-btn{font-size:.7rem;padding:5px 12px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--slate);transition:all .15s;font-family:'Inter',sans-serif}
-.doc-btn:hover{border-color:var(--periwinkle);color:var(--periwinkle)}
-.doc-analysis{background:var(--card);border:1px solid var(--periwinkle);border-radius:8px;padding:20px;display:none}
-.doc-analysis.show{display:block}
-.insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
-.insight-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px}
-.insight-label{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--periwinkle);margin-bottom:6px}
-.insight-val{font-size:.85rem;color:var(--chalk);line-height:1.5}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-
-/* ── TOAST ── */
-#toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--periwinkle);border-radius:6px;padding:12px 18px;font-size:.8rem;color:var(--chalk);z-index:999;transform:translateY(60px);opacity:0;transition:all .3s;pointer-events:none}
-#toast.show{transform:none;opacity:1}
-
-/* ── RESPONSIVE ── */
-@media(max-width:768px){
-  #sidebar{position:fixed;top:56px;bottom:0;left:0;z-index:40;transform:translateX(-100%)}
-  #sidebar.open{transform:none}
-  .ham{display:flex}
-  .two-col{grid-template-columns:1fr}
-  .form-grid{grid-template-columns:1fr}
-  .field.full{grid-column:1}
-  #v-dashboard,#v-strategy,#v-projects,#v-docs{padding:20px;gap:16px}
-  .proj-grid{grid-template-columns:1fr}
-  .kpi-grid{grid-template-columns:1fr 1fr}
-  .msg{max-width:90%}
-}
-@media(prefers-reduced-motion:reduce){
-  *{animation:none!important;transition-duration:.01ms!important}
-}
-</style>
+<link rel="stylesheet" href="css/main.css">
 </head>
 <body>
 
 <!-- TOPBAR -->
 <div id="topbar">
-  <div class="ham" id="ham" onclick="toggleSidebar()"><span></span><span></span><span></span></div>
+  <div class="ham" id="ham"><span></span><span></span><span></span></div>
   <div class="tb-logo">Levi<span>tate</span></div>
   <div class="tb-badge">Intelligence Platform</div>
   <div class="tb-spacer"></div>
@@ -228,19 +23,19 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 <!-- SIDEBAR -->
 <nav id="sidebar">
   <div class="sb-section">Workspace</div>
-  <button class="sb-item active" onclick="nav('dashboard',this)"><span class="icon">⊞</span>Dashboard</button>
-  <button id="nav-strategy" class="sb-item" onclick="nav('strategy',this)"><span class="icon">◈</span>Strategy Builder</button>
-  <button class="sb-item" onclick="nav('projects',this)"><span class="icon">⬡</span>Projects<span class="badge">4</span></button>
-  <button id="nav-chat" class="sb-item" onclick="nav('chat',this)"><span class="icon">✦</span>AI Assistant</button>
-  <button class="sb-item" onclick="nav('docs',this)"><span class="icon">⟁</span>Documents</button>
+  <button class="sb-item active" data-view="dashboard"><span class="icon">⊞</span>Dashboard</button>
+  <button class="sb-item" data-view="strategy"><span class="icon">◈</span>Strategy Builder</button>
+  <button class="sb-item" data-view="projects"><span class="icon">⬡</span>Projects<span class="badge">4</span></button>
+  <button class="sb-item" data-view="chat"><span class="icon">✦</span>AI Assistant</button>
+  <button class="sb-item" data-view="docs"><span class="icon">⟁</span>Documents</button>
 
   <div class="sb-section">Workstreams</div>
-  <button class="sb-item" onclick="nav('strategy',this);selectWS('Ecosystem Orchestration')"><span class="icon" style="color:var(--periwinkle)">●</span>Ecosystem</button>
-  <button class="sb-item" onclick="nav('strategy',this);selectWS('Business Transformation')"><span class="icon" style="color:var(--green)">●</span>Transformation</button>
-  <button class="sb-item" onclick="nav('strategy',this);selectWS('Digital Products')"><span class="icon" style="color:#FFD97D">●</span>Digital Products</button>
-  <button class="sb-item" onclick="nav('strategy',this);selectWS('Marketing & Content')"><span class="icon" style="color:var(--accent)">●</span>Marketing</button>
-  <button class="sb-item" onclick="nav('strategy',this);selectWS('Commerce')"><span class="icon" style="color:#A78BFA">●</span>Commerce</button>
-  <button class="sb-item" onclick="nav('strategy',this);selectWS('Learning')"><span class="icon" style="color:#38BDF8">●</span>Learning</button>
+  <button class="sb-item" data-view="strategy" data-ws="Ecosystem Orchestration"><span class="icon" style="color:var(--periwinkle)">●</span>Ecosystem</button>
+  <button class="sb-item" data-view="strategy" data-ws="Business Transformation"><span class="icon" style="color:var(--green)">●</span>Transformation</button>
+  <button class="sb-item" data-view="strategy" data-ws="Digital Products"><span class="icon" style="color:#FFD97D">●</span>Digital Products</button>
+  <button class="sb-item" data-view="strategy" data-ws="Marketing & Content"><span class="icon" style="color:var(--accent)">●</span>Marketing</button>
+  <button class="sb-item" data-view="strategy" data-ws="Commerce"><span class="icon" style="color:#A78BFA">●</span>Commerce</button>
+  <button class="sb-item" data-view="strategy" data-ws="Learning"><span class="icon" style="color:#38BDF8">●</span>Learning</button>
 
   <div class="sb-bottom">
     <div class="sb-user">
@@ -263,7 +58,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
         <div class="dash-title">Good morning, <span>Kneuralabs</span> ✦</div>
         <div class="dash-sub">Here's your engagement overview for today.</div>
       </div>
-      <button class="btn btn-p" onclick="nav('strategy',document.getElementById('nav-strategy'))">+ New Strategy</button>
+      <button class="btn btn-p" id="btn-new-strategy">+ New Strategy</button>
     </div>
     <div class="kpi-grid">
       <div class="kpi"><div class="kpi-val">4 <span class="up">↑</span></div><div class="kpi-lbl">Active Projects</div></div>
@@ -321,16 +116,16 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
         </div>
       </div>
       <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-p" onclick="generateStrategy()">Generate transformation plan</button>
-        <button class="btn btn-o" onclick="clearStrategy()">Clear</button>
+        <button class="btn btn-p" id="btn-generate">Generate transformation plan</button>
+        <button class="btn btn-o" id="btn-clear">Clear</button>
       </div>
     </div>
     <div class="result-panel" id="strategy-result">
       <h3 id="result-title">Transformation Plan</h3>
       <div class="ai-prose" id="result-body"></div>
       <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-p" onclick="saveStrategy()">Save to projects</button>
-        <button class="btn btn-o" onclick="exportStrategy()">Export PDF</button>
+        <button class="btn btn-p" id="btn-save">Save to projects</button>
+        <button class="btn btn-o" id="btn-export">Export PDF</button>
       </div>
     </div>
   </div>
@@ -342,7 +137,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
         <div class="dash-title">Projects & <span style="color:var(--periwinkle)">Workstreams</span></div>
         <div class="dash-sub">Track every active engagement.</div>
       </div>
-      <button class="btn btn-p" onclick="newProject()">+ New project</button>
+      <button class="btn btn-p" id="btn-new-project">+ New project</button>
     </div>
     <div class="proj-grid" id="proj-grid"></div>
     <div class="proj-detail" id="proj-detail"></div>
@@ -362,14 +157,14 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
       </div>
     </div>
     <div class="chat-suggestions" id="chat-suggestions">
-      <button class="sug-chip" onclick="sendSug(this)">Which workstream fits a retail client?</button>
-      <button class="sug-chip" onclick="sendSug(this)">Draft an executive summary for GlobalBank</button>
-      <button class="sug-chip" onclick="sendSug(this)">What KPIs should we track for commerce?</button>
-      <button class="sug-chip" onclick="sendSug(this)">Explain ecosystem orchestration simply</button>
+      <button class="sug-chip">Which workstream fits a retail client?</button>
+      <button class="sug-chip">Draft an executive summary for GlobalBank</button>
+      <button class="sug-chip">What KPIs should we track for commerce?</button>
+      <button class="sug-chip">Explain ecosystem orchestration simply</button>
     </div>
     <div class="chat-bar">
-      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask anything about your engagements…" onkeydown="chatKey(event)"></textarea>
-      <button class="chat-send" onclick="sendChat()"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
+      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask anything about your engagements…"></textarea>
+      <button class="chat-send" id="chat-send"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
     </div>
   </div>
 
@@ -379,12 +174,12 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
       <div class="dash-title">Document <span style="color:var(--periwinkle)">Analysis</span></div>
       <div class="dash-sub">Upload client docs for AI-powered insight extraction.</div>
     </div>
-    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+    <div class="upload-zone" id="upload-zone">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6C7FFF" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
       <div class="upload-title">Drop files here or click to upload</div>
       <div class="upload-sub">PDF, DOCX, TXT — up to 25MB each</div>
     </div>
-    <input type="file" id="file-input" style="display:none" accept=".pdf,.doc,.docx,.txt" multiple onchange="handleFiles(this.files)">
+    <input type="file" id="file-input" style="display:none" accept=".pdf,.doc,.docx,.txt" multiple>
     <div class="doc-list" id="doc-list"></div>
     <div class="doc-analysis" id="doc-analysis">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
@@ -401,456 +196,6 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 
 <div id="toast"></div>
 
-<script>
-// ── STATE ──
-const WORKSTREAMS = [
-  {name:'Ecosystem Orchestration',color:'#6C7FFF'},
-  {name:'Business Transformation',color:'#4FFFB0'},
-  {name:'Digital Products',color:'#FFD97D'},
-  {name:'Marketing & Content',color:'#FF6B6B'},
-  {name:'Commerce',color:'#A78BFA'},
-  {name:'Learning',color:'#38BDF8'}
-];
-
-const PROJECTS = [
-  {id:1,name:'GlobalBank DX',client:'GlobalBank PLC',status:'active',progress:68,ws:['Ecosystem Orchestration','Digital Products'],industry:'Financial Services',brief:'Modernise customer onboarding and digital channels'},
-  {id:2,name:'RetailCo Commerce',client:'RetailCo',status:'active',progress:41,ws:['Commerce','Marketing & Content'],industry:'Retail & Commerce',brief:'Build immersive omnichannel commerce experience'},
-  {id:3,name:'MediHealth Learning',client:'MediHealth Group',status:'plan',progress:15,ws:['Learning','Business Transformation'],industry:'Healthcare',brief:'Capability uplift across 12,000 clinical staff'},
-  {id:4,name:'GovNext Platform',client:'Dept of Digital Services',status:'review',progress:90,ws:['Digital Products','Ecosystem Orchestration'],industry:'Government',brief:'Citizen-facing platform consolidation'}
-];
-
-const ACTIVITIES = [
-  {text:'<strong>Strategy plan</strong> generated for RetailCo',time:'2m ago'},
-  {text:'<strong>GlobalBank DX</strong> milestone reached — 68%',time:'18m ago'},
-  {text:'<strong>3 documents</strong> analyzed from MediHealth brief',time:'1h ago'},
-  {text:'<strong>AI assistant</strong> session — 14 messages',time:'3h ago'},
-  {text:'<strong>GovNext</strong> moved to review stage',time:'5h ago'}
-];
-
-let selectedWS = new Set();
-let chatHistory = [];
-let docs = [];
-
-// ── API CONFIG ──
-// Production: set API_PROXY to your backend endpoint that holds the Anthropic
-// API key server-side (e.g. a Cloudflare Worker or Supabase edge function).
-// Shipping a key in client-side code exposes it to anyone who opens DevTools.
-const API_PROXY = '';
-const MODEL = 'claude-sonnet-4-6';
-
-function esc(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function getApiKey() {
-  let key = localStorage.getItem('anthropic_api_key');
-  if(!key){
-    key = window.prompt('Enter your Anthropic API key.\nIt is stored only in this browser (localStorage) and sent only to api.anthropic.com.');
-    if(key) localStorage.setItem('anthropic_api_key', key.trim());
-  }
-  return key ? key.trim() : null;
-}
-
-async function callClaude(body) {
-  const url = API_PROXY || 'https://api.anthropic.com/v1/messages';
-  const headers = {'Content-Type':'application/json'};
-  if(!API_PROXY){
-    const key = getApiKey();
-    if(!key) throw new Error('No API key provided.');
-    headers['x-api-key'] = key;
-    headers['anthropic-version'] = '2023-06-01';
-    // Required for browser-origin requests; the name is a deliberate warning
-    // that keys in browsers are visible to end users — use API_PROXY in prod.
-    headers['anthropic-dangerous-direct-browser-access'] = 'true';
-  }
-  let res;
-  try {
-    res = await fetch(url, {method:'POST', headers, body:JSON.stringify({model:MODEL, ...body})});
-  } catch(e) {
-    throw new Error('Network error — could not reach the AI service.');
-  }
-  const data = await res.json().catch(()=>null);
-  if(!res.ok){
-    if(res.status===401) localStorage.removeItem('anthropic_api_key'); // bad key — re-prompt next time
-    throw new Error(data?.error?.message || `AI service error (HTTP ${res.status})`);
-  }
-  const text = data?.content?.find(b=>b.type==='text')?.text;
-  if(!text) throw new Error('The model returned an empty response.');
-  return text;
-}
-
-// ── NAV ──
-function nav(id, btn) {
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-  document.getElementById('v-'+id).classList.add('active');
-  document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  if(window.innerWidth<=768) document.getElementById('sidebar').classList.remove('open');
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-}
-
-// ── DASHBOARD ──
-function renderDashboard() {
-  // WS activity bars
-  const acts = [72,58,85,44,63,38];
-  document.getElementById('ws-activity').innerHTML = WORKSTREAMS.map((w,i)=>`
-    <div class="ws-row">
-      <div class="ws-dot" style="background:${w.color}"></div>
-      <div class="ws-name" style="font-size:.8rem">${w.name}</div>
-      <div class="ws-bar-wrap"><div class="ws-bar" data-w="${acts[i]}" style="width:0%;background:${w.color}"></div></div>
-      <div class="ws-pct">${acts[i]}%</div>
-    </div>`).join('');
-  setTimeout(()=>document.querySelectorAll('.ws-bar').forEach(b=>b.style.width=b.dataset.w+'%'),100);
-
-  document.getElementById('activity-feed').innerHTML = ACTIVITIES.map(a=>`
-    <div class="activity-item"><div class="act-dot"></div><div class="act-body">${a.text}</div><div class="act-time">${a.time}</div></div>`).join('');
-
-  document.getElementById('dash-projects').innerHTML = PROJECTS.slice(0,4).map(p=>`
-    <div class="proj-card" onclick="openProject(${p.id})" style="cursor:pointer">
-      <div class="proj-card-top"><div class="proj-name" style="font-size:.85rem">${p.name}</div><div class="proj-status status-${p.status}">${p.status}</div></div>
-      <div class="proj-client" style="margin-bottom:10px">${p.client}</div>
-      <div class="prog-row"><span>${p.progress}% complete</span></div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${p.progress}%"></div></div>
-    </div>`).join('');
-}
-
-// ── STRATEGY ──
-function renderWsChips() {
-  document.getElementById('ws-chips').innerHTML = WORKSTREAMS.map(w=>`
-    <button class="chip ${selectedWS.has(w.name)?'on':''}" onclick="toggleWS('${w.name}',this)">${w.name}</button>`).join('');
-}
-
-function toggleWS(name, el) {
-  selectedWS.has(name)?selectedWS.delete(name):selectedWS.add(name);
-  el.classList.toggle('on');
-}
-
-function selectWS(name) {
-  selectedWS.add(name);
-  renderWsChips();
-}
-
-async function generateStrategy() {
-  const client = document.getElementById('f-client').value.trim();
-  const objective = document.getElementById('f-objective').value.trim();
-  const industry = document.getElementById('f-industry').value;
-  const timeline = document.getElementById('f-timeline').value;
-  const budget = document.getElementById('f-budget').value;
-  const ws = [...selectedWS];
-
-  if(!client||!objective){toast('Add a client name and objective first.');return;}
-
-  const panel = document.getElementById('strategy-result');
-  const body = document.getElementById('result-body');
-  const title = document.getElementById('result-title');
-  panel.classList.add('show');
-  title.textContent = `Transformation Plan — ${client}`;
-  body.innerHTML = `<div class="loading-row"><div class="spinner"></div> Generating your transformation plan…</div>`;
-
-  const prompt = `You are Levitate, an experience intelligence platform. Generate a detailed, structured transformation plan for the following brief. Be specific, actionable, and use the exact workstreams and context provided.
-
-Client: ${client}
-Industry: ${industry||'Not specified'}
-Objective: ${objective}
-Workstreams to activate: ${ws.length?ws.join(', '):'All relevant workstreams'}
-Timeline: ${timeline}
-Budget: ${budget}
-
-Structure your response as:
-1. Executive Summary (2-3 sentences)
-2. Strategic Diagnosis (key challenges and opportunities)
-3. Recommended Workstreams with rationale (for each selected workstream)
-4. Phased Roadmap (Phase 1/2/3 with clear milestones)
-5. Expected Outcomes & KPIs
-6. Risk Considerations
-
-Format phases as: PHASE_START: [Phase Name] | [Duration] | [Key milestone] :PHASE_END
-Keep it sharp, consulting-grade, and specific to the industry.`;
-
-  try {
-    const text = await callClaude({max_tokens:2000, messages:[{role:'user',content:prompt}]});
-    streamText(body, formatStrategy(text));
-  } catch(e) {
-    body.innerHTML = `<div style="color:var(--accent)">${esc(e.message)}</div>`;
-  }
-}
-
-// Escape model output, then render the minimal markdown subset we prompt for.
-function mdLite(text) {
-  return esc(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
-}
-
-function formatStrategy(text) {
-  text = esc(text);
-  // Replace PHASE markers with styled divs
-  text = text.replace(/PHASE_START:\s*(.+?)\s*:PHASE_END/g, (_,c)=>{
-    const parts = c.split('|').map(s=>s.trim());
-    return `<div class="phase"><h4>${parts[0]||''} ${parts[1]?'· '+parts[1]:''}</h4>${parts[2]||''}</div>`;
-  });
-  return text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
-}
-
-function streamText(el, html) {
-  const cursor = '<span class="streaming-cursor"></span>';
-  el.innerHTML = cursor;
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  const nodes = [];
-  function collectText(node) {
-    if(node.nodeType===3) nodes.push({type:'text',text:node.textContent,parent:node.parentNode,ref:node});
-    else { nodes.push({type:'open',node:node.cloneNode(false)}); node.childNodes.forEach(collectText); nodes.push({type:'close'}); }
-  }
-  div.childNodes.forEach(collectText);
-  
-  el.innerHTML = '';
-  let stack = [el]; let i = 0;
-  const cur = document.createElement('span'); cur.className='streaming-cursor'; 
-  function step() {
-    if(i>=nodes.length){stack[stack.length-1].appendChild(cur);return;}
-    const n = nodes[i++];
-    if(n.type==='text'){const t=document.createTextNode(n.text);stack[stack.length-1].appendChild(t);}
-    else if(n.type==='open'){const newEl=n.node.cloneNode(false);stack[stack.length-1].appendChild(newEl);stack.push(newEl);}
-    else if(n.type==='close'&&stack.length>1){stack.pop();}
-    setTimeout(step, i%3===0?12:0);
-  }
-  step();
-}
-
-function clearStrategy() {
-  document.getElementById('f-client').value='';
-  document.getElementById('f-objective').value='';
-  document.getElementById('f-industry').value='';
-  selectedWS.clear();
-  renderWsChips();
-  document.getElementById('strategy-result').classList.remove('show');
-}
-
-function saveStrategy() {
-  toast('Strategy saved to projects ✓');
-}
-function exportStrategy() {
-  toast('Export coming soon — PDF generation in roadmap.');
-}
-
-// ── PROJECTS ──
-function renderProjects() {
-  document.getElementById('proj-grid').innerHTML = PROJECTS.map(p=>`
-    <div class="proj-card" onclick="openProject(${p.id})">
-      <div class="proj-card-top">
-        <div><div class="proj-name">${p.name}</div><div class="proj-client">${p.client}</div></div>
-        <div class="proj-status status-${p.status}">${p.status}</div>
-      </div>
-      <div class="proj-progress">
-        <div class="prog-row"><span>Progress</span><span>${p.progress}%</span></div>
-        <div class="prog-bar"><div class="prog-fill" style="width:${p.progress}%"></div></div>
-      </div>
-      <div class="proj-ws">${p.ws.map(w=>`<span class="ws-pill">${w}</span>`).join('')}</div>
-    </div>`).join('');
-}
-
-function openProject(id) {
-  const p = PROJECTS.find(x=>x.id===id);
-  const d = document.getElementById('proj-detail');
-  d.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-      <div><div class="dash-title" style="font-size:1.3rem">${p.name}</div><div class="dash-sub">${p.client} · ${p.industry}</div></div>
-      <div class="proj-status status-${p.status}">${p.status}</div>
-    </div>
-    <div style="font-size:.85rem;color:var(--slate);margin-bottom:20px;line-height:1.7">${p.brief}</div>
-    <div class="kpi-grid" style="margin-bottom:20px">
-      <div class="kpi"><div class="kpi-val">${p.progress}%</div><div class="kpi-lbl">Complete</div></div>
-      <div class="kpi"><div class="kpi-val">${p.ws.length}</div><div class="kpi-lbl">Workstreams</div></div>
-    </div>
-    <div style="font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;margin-bottom:10px;color:var(--slate);letter-spacing:.08em;text-transform:uppercase">Active Workstreams</div>
-    ${p.ws.map(w=>{const ws=WORKSTREAMS.find(x=>x.name===w)||{color:'#6C7FFF'};return`<div class="ws-row"><div class="ws-dot" style="background:${ws.color}"></div><div>${w}</div></div>`}).join('')}
-    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn btn-p" onclick="nav('chat',document.getElementById('nav-chat'));preFillChat('Tell me about the ${p.name} engagement')">Ask AI about this</button>
-      <button class="btn btn-o" onclick="document.getElementById('proj-detail').classList.remove('show')">Close</button>
-    </div>`;
-  d.classList.add('show');
-  d.scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-function newProject() {
-  nav('strategy', document.getElementById('nav-strategy'));
-  toast('Start a new brief to create a project.');
-}
-
-// ── CHAT ──
-function chatKey(e) {
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}
-}
-
-function sendSug(el) {
-  document.getElementById('chat-input').value = el.textContent;
-  sendChat();
-  document.getElementById('chat-suggestions').style.display='none';
-}
-
-function preFillChat(text) {
-  document.getElementById('chat-input').value = text;
-}
-
-let chatBusy = false;
-
-async function sendChat() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if(!text || chatBusy) return; // a pending request would interleave chatHistory
-  chatBusy = true;
-  input.value = '';
-
-  appendMsg('user', esc(text));
-  chatHistory.push({role:'user',content:text});
-
-  const thinkingEl = appendMsg('ai', '<div class="loading-row"><div class="spinner"></div> Thinking…</div>');
-
-  const systemPrompt = `You are Levitate AI, the intelligent assistant embedded in the Levitate Experience Intelligence Platform. You help consultants and enterprise clients with:
-- Transformation strategy across 6 workstreams: Ecosystem Orchestration, Business Transformation, Digital Products & Platforms, Marketing & Content, Commerce, Learning
-- Workstream fit analysis and recommendations
-- KPI frameworks and measurement
-- Client engagement planning and proposal drafting
-- Interpreting data and documents
-
-Active projects: GlobalBank DX (Financial Services, 68% complete), RetailCo Commerce (Retail, 41%), MediHealth Learning (Healthcare, 15%), GovNext Platform (Government, 90%).
-
-Be sharp, specific, consulting-grade. Use concrete examples. Keep responses focused and useful. Format with clear sections when helpful.`;
-
-  try {
-    const reply = await callClaude({
-      max_tokens:1000,
-      system: systemPrompt,
-      messages: chatHistory
-    });
-    chatHistory.push({role:'assistant',content:reply});
-    thinkingEl.querySelector('.msg-bubble').innerHTML = mdLite(reply);
-  } catch(e) {
-    chatHistory.pop(); // drop the unanswered user turn so a retry resends cleanly
-    thinkingEl.querySelector('.msg-bubble').innerHTML = `<span style="color:var(--accent)">${esc(e.message)}</span>`;
-  } finally {
-    chatBusy = false;
-  }
-
-  const msgs = document.getElementById('chat-msgs');
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function appendMsg(role, html) {
-  const msgs = document.getElementById('chat-msgs');
-  const el = document.createElement('div');
-  el.className = `msg ${role}`;
-  el.innerHTML = `<div class="msg-av">${role==='ai'?'L':'K'}</div><div class="msg-bubble">${html}</div>`;
-  msgs.appendChild(el);
-  msgs.scrollTop = msgs.scrollHeight;
-  return el;
-}
-
-// ── DOCUMENTS ──
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('upload-zone').classList.remove('drag');
-  handleFiles(e.dataTransfer.files);
-}
-
-let _docIdCounter = 0;
-
-function handleFiles(files) {
-  const added = [...files].map(f=>{
-    const id = ++_docIdCounter;
-    docs.push({id, name:f.name, size:(f.size/1024).toFixed(0)+'KB', type:f.type, file:f});
-    return id;
-  });
-  renderDocs();
-  added.forEach(analyzeDocById);
-}
-
-function renderDocs() {
-  const icons = {'application/pdf':'📄','application/vnd.openxmlformats-officedocument.wordprocessingml.document':'📝','text/plain':'📃'};
-  document.getElementById('doc-list').innerHTML = docs.map(d=>`
-    <div class="doc-item">
-      <div class="doc-icon">${icons[d.type]||'📄'}</div>
-      <div><div class="doc-name">${esc(d.name)}</div><div class="doc-meta">${d.size}</div></div>
-      <div class="doc-actions">
-        <button class="doc-btn" onclick="analyzeDocById(${d.id})">Analyze</button>
-        <button class="doc-btn" onclick="removeDoc(${d.id})">Remove</button>
-      </div>
-    </div>`).join('');
-}
-
-function removeDoc(id) {
-  docs = docs.filter(d=>d.id!==id);
-  renderDocs();
-}
-
-function analyzeDocById(id) {
-  const doc = docs.find(d=>d.id===id);
-  if(doc) analyzeDoc(doc.file);
-}
-
-async function analyzeDoc(file) {
-  const panel = document.getElementById('doc-analysis');
-  const status = document.getElementById('analysis-status');
-  const grid = document.getElementById('insight-grid');
-  const prose = document.getElementById('analysis-prose');
-  panel.classList.add('show');
-  status.textContent = `Analyzing ${file.name}…`;
-  grid.innerHTML=''; prose.innerHTML='';
-
-  // Only plain-text formats can be read meaningfully in the browser; PDFs and
-  // DOCX read via readAsText produce binary garbage that misleads the model.
-  const isTextFile = /^text\//.test(file.type) || /\.(txt|md|csv|json)$/i.test(file.name);
-  const text = isTextFile ? await new Promise(res=>{
-    const r = new FileReader();
-    r.onload = e => res((e.target.result||'').substring(0,3000)||'[Empty file]');
-    r.onerror = () => res('[Could not read file]');
-    r.readAsText(file);
-  }) : '[Binary document — content could not be extracted in the browser. Base your analysis on the filename and say so in the summary.]';
-
-  try {
-    const raw0 = await callClaude({
-      max_tokens:1000,
-      messages:[{role:'user',content:`Analyze this document for a consulting engagement. Extract key insights, identify transformation opportunities, and map to Levitate workstreams (Ecosystem Orchestration, Business Transformation, Digital Products, Marketing & Content, Commerce, Learning).
-
-Filename: ${file.name}
-Content preview: ${text.substring(0,1500)}
-
-Respond ONLY with valid JSON (no markdown, no backticks):
-{"summary":"2-3 sentence summary","sentiment":"Positive|Neutral|Concern","complexity":"Low|Medium|High","workstreams":["ws1","ws2"],"insights":["insight1","insight2","insight3"],"opportunities":["opp1","opp2"],"risks":["risk1"]}`}]
-    });
-    const raw = raw0.replace(/```json|```/g,'').trim();
-    const j = JSON.parse(raw.substring(raw.indexOf('{'), raw.lastIndexOf('}')+1));
-
-    status.textContent = `Analysis complete — ${file.name}`;
-    grid.innerHTML = `
-      <div class="insight-card"><div class="insight-label">Summary</div><div class="insight-val">${esc(j.summary||'—')}</div></div>
-      <div class="insight-card"><div class="insight-label">Sentiment</div><div class="insight-val">${esc(j.sentiment||'—')}</div></div>
-      <div class="insight-card"><div class="insight-label">Complexity</div><div class="insight-val">${esc(j.complexity||'—')}</div></div>
-      <div class="insight-card"><div class="insight-label">Relevant Workstreams</div><div class="insight-val">${esc((j.workstreams||[]).join(', ')||'—')}</div></div>`;
-
-    prose.innerHTML = `
-      ${j.insights?.length?`<div style="margin-bottom:16px"><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--periwinkle);margin-bottom:8px">Key Insights</div>${j.insights.map(i=>`<div class="activity-item"><div class="act-dot"></div><div class="act-body">${esc(i)}</div></div>`).join('')}</div>`:''}
-      ${j.opportunities?.length?`<div style="margin-bottom:16px"><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px">Opportunities</div>${j.opportunities.map(o=>`<div class="activity-item"><div class="act-dot" style="background:var(--green)"></div><div class="act-body">${esc(o)}</div></div>`).join('')}</div>`:''}
-      ${j.risks?.length?`<div><div class="section-eyebrow" style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px">Risks to Address</div>${j.risks.map(r=>`<div class="activity-item"><div class="act-dot" style="background:var(--accent)"></div><div class="act-body">${esc(r)}</div></div>`).join('')}</div>`:''}`;
-  } catch(e) {
-    status.textContent = 'Analysis error.';
-    prose.innerHTML = `<div style="color:var(--accent);font-size:.82rem">${esc(e.message)}</div>`;
-  }
-}
-
-// ── TOAST ──
-function toast(msg, dur=3000) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), dur);
-}
-
-// ── INIT ──
-renderDashboard();
-renderWsChips();
-renderProjects();
-</script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
