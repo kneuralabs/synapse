@@ -3,7 +3,8 @@
 // Resolved) on timers, gates high-risk actions behind human approval, and
 // emits events so every view stays live. Runs fully client-side.
 
-import {ISSUE_TEMPLATES, CUSTOMERS, STAGES} from './data.js';
+import {STAGES} from './data.js';
+import {getCustomers, getActiveTemplates} from './setup.js';
 
 const listeners = {};
 export function on(event, fn){ (listeners[event] ||= []).push(fn); }
@@ -44,8 +45,11 @@ function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 // ── Issue lifecycle ──────────────────────────────────────────────────────
 
 export function spawnIssue(template){
-  const t = template || rand(ISSUE_TEMPLATES);
-  const customer = rand(CUSTOMERS);
+  const templates = getActiveTemplates();
+  const customers = getCustomers();
+  if (!templates.length || !customers.length) return null;
+  const t = template || rand(templates);
+  const customer = rand(customers);
   const issue = {
     id: 'INC-' + String(nextId++).padStart(4,'0'),
     ...t,
@@ -159,10 +163,9 @@ function detectLoop(){
 }
 
 export function startEngine(){
-  // Seed a believable starting state: a few issues mid-flight.
-  spawnIssue(ISSUE_TEMPLATES[3]);
-  spawnIssue(ISSUE_TEMPLATES[2]);
-  setTimeout(()=>spawnIssue(ISSUE_TEMPLATES[5]), 1800);
-  setTimeout(()=>spawnIssue(ISSUE_TEMPLATES[0]), 4200);
+  spawnIssue();
+  spawnIssue();
+  setTimeout(()=>spawnIssue(), 1800);
+  setTimeout(()=>spawnIssue(), 4200);
   setTimeout(detectLoop, 9000);
 }

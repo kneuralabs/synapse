@@ -9,10 +9,145 @@
 </head>
 <body>
 
+<!-- SETUP WIZARD OVERLAY -->
+<div id="setup-overlay">
+  <div class="setup-modal">
+
+    <div class="setup-logo-row">
+      <div class="setup-logo-icon"><img src="LOGO.png" alt="Synapse logo"></div>
+      <span class="setup-logo-text">Synapse</span>
+    </div>
+
+    <div class="setup-steps-bar">
+      <div class="setup-step-dot" id="sdot-1"></div>
+      <div class="setup-step-line"></div>
+      <div class="setup-step-dot" id="sdot-2"></div>
+      <div class="setup-step-line"></div>
+      <div class="setup-step-dot" id="sdot-3"></div>
+    </div>
+
+    <!-- Step 1 — Organization -->
+    <div class="setup-step" id="setup-step-1">
+      <div class="setup-eyebrow">Step 1 of 3</div>
+      <div class="setup-title">Set up your organization</div>
+      <div class="setup-sub">Tell Synapse about your business so the orchestration engine can personalize its context.</div>
+      <div class="setup-fields">
+        <div class="setup-field">
+          <label class="setup-label">Organization name <span class="req">*</span></label>
+          <input class="setup-input" id="s1-org-name" type="text" placeholder="e.g. Acme Corp" autocomplete="organization">
+        </div>
+        <div class="setup-field">
+          <label class="setup-label">Industry</label>
+          <select class="setup-input" id="s1-industry">
+            <option value="">Select your industry…</option>
+            <option>E-commerce / Retail</option>
+            <option>SaaS / Software</option>
+            <option>Financial Services</option>
+            <option>Telecommunications</option>
+            <option>Healthcare</option>
+            <option>Travel &amp; Hospitality</option>
+            <option>Media &amp; Entertainment</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="setup-field">
+          <label class="setup-label">Your name or role</label>
+          <input class="setup-input" id="s1-operator" type="text" placeholder="e.g. Sarah — Head of CX" autocomplete="name">
+        </div>
+      </div>
+      <div class="setup-actions">
+        <button class="btn btn-p" id="s1-next">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 — Customers -->
+    <div class="setup-step" id="setup-step-2">
+      <div class="setup-eyebrow">Step 2 of 3</div>
+      <div class="setup-title">Add customers to monitor</div>
+      <div class="setup-sub">Add at least one customer. The engine will detect and resolve issues for every customer you add here. You can add more later from Customer 360.</div>
+      <div class="setup-cust-form">
+        <div class="setup-fields setup-fields-grid">
+          <div class="setup-field">
+            <label class="setup-label">Full name <span class="req">*</span></label>
+            <input class="setup-input" id="s2-name" type="text" placeholder="e.g. Jane Smith">
+          </div>
+          <div class="setup-field">
+            <label class="setup-label">Segment</label>
+            <select class="setup-input" id="s2-segment">
+              <option>Standard</option>
+              <option>Growth</option>
+              <option>Premium</option>
+              <option>Enterprise</option>
+            </select>
+          </div>
+          <div class="setup-field">
+            <label class="setup-label">Lifetime value ($)</label>
+            <input class="setup-input" id="s2-ltv" type="number" placeholder="e.g. 4500" min="0">
+          </div>
+          <div class="setup-field">
+            <label class="setup-label">Tenure</label>
+            <input class="setup-input" id="s2-tenure" type="text" placeholder="e.g. 2 yrs">
+          </div>
+          <div class="setup-field">
+            <label class="setup-label">Preferred channel</label>
+            <select class="setup-input" id="s2-channel">
+              <option value="web">Web</option>
+              <option value="mobile">Mobile</option>
+              <option value="email">Email</option>
+              <option value="social">Social</option>
+              <option value="contact">Contact Center</option>
+              <option value="store">In-store / IoT</option>
+              <option value="partner">Partner Portal</option>
+            </select>
+          </div>
+          <div class="setup-field">
+            <label class="setup-label">Current journey</label>
+            <select class="setup-input" id="s2-journey">
+              <option>Onboarding</option>
+              <option>Support</option>
+              <option>Renewal</option>
+              <option>At-risk</option>
+              <option>Expansion</option>
+              <option>Loyalty</option>
+            </select>
+          </div>
+          <div class="setup-field">
+            <label class="setup-label">Sentiment score (0–100)</label>
+            <input class="setup-input" id="s2-sentiment" type="number" value="70" min="0" max="100">
+          </div>
+          <div class="setup-field setup-field-wide">
+            <label class="setup-label">Persona / notes</label>
+            <input class="setup-input" id="s2-persona" type="text" placeholder="e.g. High-value subscriber, low tolerance for friction.">
+          </div>
+        </div>
+        <button class="btn btn-o" id="s2-add-btn">+ Add customer</button>
+      </div>
+      <div id="s2-cust-list" class="setup-cust-list"></div>
+      <div class="setup-actions">
+        <button class="btn btn-o" id="s2-back">← Back</button>
+        <button class="btn btn-p" id="s2-next">Continue →</button>
+      </div>
+    </div>
+
+    <!-- Step 3 — Issue types -->
+    <div class="setup-step" id="setup-step-3">
+      <div class="setup-eyebrow">Step 3 of 3</div>
+      <div class="setup-title">Choose issue types to detect</div>
+      <div class="setup-sub">Select the customer problem types you want the AI agents to monitor and resolve. All are enabled by default — deselect any that don't apply to your business.</div>
+      <div class="setup-tmpl-grid" id="s3-tmpl-grid"></div>
+      <div class="setup-actions">
+        <button class="btn btn-o" id="s3-back">← Back</button>
+        <button class="btn btn-p" id="s3-launch">Launch Synapse →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <!-- TOPBAR -->
 <div id="topbar">
   <div class="ham" id="ham"><span></span><span></span><span></span></div>
-  <div class="tb-logo"><span class="tb-logo-icon"><img src="LOGO.png" alt="Synapse logo"></span>Syn<span>apse</span></div>
+  <div class="tb-logo"><span class="tb-logo-icon"><img src="LOGO.png" alt="Synapse logo"></span>Synapse</div>
   <div class="tb-badge">Autonomous Orchestration</div>
   <div class="tb-spacer"></div>
   <div class="engine-pill" id="engine-pill" title="Pause / resume the orchestration engine">

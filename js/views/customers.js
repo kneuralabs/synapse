@@ -1,4 +1,4 @@
-import {CUSTOMERS} from '../data.js';
+import {getCustomers} from '../setup.js';
 import {state, on} from '../engine.js';
 import {esc} from '../utils.js';
 
@@ -7,7 +7,7 @@ let selectedId = null;
 function sentClass(s){ return s>=70 ? 'good' : s>=55 ? 'mid' : 'bad'; }
 
 function renderGrid(){
-  document.getElementById('customer-grid').innerHTML = CUSTOMERS.map(c=>{
+  document.getElementById('customer-grid').innerHTML = getCustomers().map(c=>{
     const open = state.issues.filter(i=>i.stage<4 && i.customer.id===c.id).length;
     return `<div class="proj-card ${c.id===selectedId?'sel':''}" data-id="${c.id}">
       <div class="proj-card-top">
@@ -27,7 +27,7 @@ function renderGrid(){
 
 function renderDetail(){
   const el = document.getElementById('customer-detail');
-  const c = CUSTOMERS.find(x=>x.id===selectedId);
+  const c = getCustomers().find(x=>x.id===selectedId);
   if(!c){ el.style.display='none'; return; }
   const history = state.issues.filter(i=>i.customer.id===c.id);
   el.style.display='block';
