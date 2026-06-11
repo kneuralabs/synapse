@@ -1,4 +1,4 @@
-import {state, on, spawnIssue, approve, reject} from '../engine.js';
+import {state, on, approve, reject} from '../engine.js';
 import {STAGES, CHANNELS} from '../data.js';
 import {esc, mdLite, toast} from '../utils.js';
 import {callClaude} from '../api.js';
@@ -36,7 +36,7 @@ function renderList(){
       <div class="issue-meta">${i.id} · ${esc(i.customer.name)} · ${esc(i.customer.segment)}</div>
       ${stageDots(i)}
       <div class="issue-stage-lbl">${i.needsApproval ? '✋ Awaiting human approval' : i.stage===4 ? (i.rejected?'Closed by human':'✓ Resolved autonomously') : STAGES[i.stage]+'…'}</div>
-    </div>`).join('') || '<div class="empty-hint">Nothing here yet.</div>';
+    </div>`).join('') || '<div class="empty-hint">No issues yet. Issues stream in live from your data source — connect one in setup if you haven\'t.</div>';
 }
 
 function renderDetail(){
@@ -103,12 +103,6 @@ export function initIssues(){
     if(btn.dataset.act==='approve'){ approve(i); toast('Action approved — agent resuming.'); }
     if(btn.dataset.act==='reject'){ reject(i); toast('Action rejected — issue routed to manual handling.'); }
     if(btn.dataset.act==='deepdive') deepDive(i);
-  });
-  document.getElementById('btn-simulate').addEventListener('click', ()=>{
-    const i = spawnIssue();
-    selectedId = i.id;
-    toast(`Incident ${i.id} injected — agents responding.`);
-    renderList(); renderDetail();
   });
   on('change', ()=>{ renderList(); renderDetail(); });
   renderList();

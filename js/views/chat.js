@@ -1,6 +1,7 @@
 import {callClaude} from '../api.js';
 import {esc, mdLite} from '../utils.js';
-import {state, openIssues, approvalQueue} from '../engine.js';
+import {state, openIssues, approvalQueue, predictedCsat} from '../engine.js';
+import {getAgents} from '../agents.js';
 
 const chatHistory = [];
 let chatBusy = false;
@@ -10,13 +11,14 @@ function systemPrompt(){
   const open = openIssues().map(i=>`${i.id} ${i.type} (${i.severity}, ${i.channel}) for ${i.customer.name} [${i.customer.segment}, sentiment ${i.customer.sentiment}]`).join('; ') || 'none';
   const held = approvalQueue().map(i=>`${i.id} ${i.type} (risk ${i.risk})`).join('; ') || 'none';
   const resolved = state.issues.filter(i=>i.stage===4).slice(0,8).map(i=>`${i.id} ${i.type} → ${i.resolution}`).join('; ') || 'none yet';
-  return `You are Levitate AI, the assistant inside the Levitate Autonomous Experience Orchestration Platform. The platform's AI agents (Service, Sales, Care, Ops, Marketing) automatically detect and resolve customer problems across web, mobile, email, social, contact center, in-store and partner channels, with human-in-the-loop approval for high-risk actions.
+  const fleet = getAgents().map(a=>`${a.name} (${a.scope})`).join(', ');
+  return `You are Synapse AI, the assistant inside the Synapse Autonomous Experience Orchestration Platform. The platform's AI agents — ${fleet} — automatically detect and resolve customer problems across web, mobile, email, social, contact center, in-store and partner channels, with human-in-the-loop approval for high-risk actions.
 
 LIVE PLATFORM STATE
 - Autonomy mode: ${state.autonomy}
 - Issues in flight: ${open}
 - Awaiting human approval: ${held}
-- Resolved this session: ${state.kpis.resolvedToday} (auto rate ${state.kpis.autoRate}%, value recovered $${state.kpis.valueRecovered}, predicted CSAT ${state.kpis.csat}%)
+- Resolved this session: ${state.kpis.resolvedToday} (auto rate ${state.kpis.autoRate}%, value recovered $${state.kpis.valueRecovered}, predicted CSAT ${predictedCsat() ?? 'n/a'}%)
 - Recent resolutions: ${resolved}
 
 Help the operator understand and act on this state: summarize operations, explain agent decisions, flag churn risks, draft customer communications, and advise on guardrail tuning. Be sharp, specific and concise. Use **bold** sparingly for emphasis; plain paragraphs otherwise.`;

@@ -1,10 +1,9 @@
-import {ISSUE_TEMPLATES} from './data.js';
 import {esc} from './utils.js';
 
 const KEY_DONE  = 'snps_setup_done';
 const KEY_ORG   = 'snps_org';
 const KEY_CUSTS = 'snps_customers';
-const KEY_TMPLS = 'snps_templates';
+const KEY_DATA  = 'snps_data_url';
 const KEY_PROXY = 'snps_api_proxy';
 
 export const isSetupDone = () => !!localStorage.getItem(KEY_DONE);
@@ -19,12 +18,8 @@ export function getCustomers() {
   catch { return []; }
 }
 
-export function getActiveTemplates() {
-  try {
-    const sel = JSON.parse(localStorage.getItem(KEY_TMPLS));
-    if (!sel || !sel.length) return ISSUE_TEMPLATES;
-    return ISSUE_TEMPLATES.filter(t => sel.includes(t.type));
-  } catch { return ISSUE_TEMPLATES; }
+export function getDataUrl() {
+  return localStorage.getItem(KEY_DATA) || '';
 }
 
 export function getApiProxy() {
@@ -32,7 +27,7 @@ export function getApiProxy() {
 }
 
 export function resetSetup() {
-  [KEY_DONE, KEY_ORG, KEY_CUSTS, KEY_TMPLS, KEY_PROXY].forEach(k => localStorage.removeItem(k));
+  [KEY_DONE, KEY_ORG, KEY_CUSTS, KEY_DATA, KEY_PROXY].forEach(k => localStorage.removeItem(k));
 }
 
 export function applyOrgToUI() {
@@ -51,14 +46,12 @@ export function applyOrgToUI() {
 
 let _onDone = null;
 let _customers = [];
-let _selectedTypes = new Set();
 let _custIdCounter = 1001;
 
 export function runSetupWizard(onDone) {
   _onDone = onDone;
   _customers = [];
   _custIdCounter = 1001;
-  _selectedTypes = new Set(ISSUE_TEMPLATES.map(t => t.type));
   goStep(1);
   document.getElementById('setup-overlay').classList.add('active');
 }
@@ -101,10 +94,9 @@ function bindStep2() {
   renderCustList();
   document.getElementById('s2-add-btn').onclick = addCustomer;
   document.getElementById('s2-back').onclick = () => goStep(1);
-  document.getElementById('s2-next').onclick = () => {
-    if (_customers.length === 0) { shake('s2-add-btn'); return; }
-    goStep(3);
-  };
+  // Zero customers is fine here — the data source connected in step 3 can
+  // supply them; the launch step validates that at least one source exists.
+  document.getElementById('s2-next').onclick = () => goStep(3);
   document.getElementById('s2-name').onkeydown = e => {
     if (e.key === 'Enter') addCustomer();
   };
@@ -150,31 +142,18 @@ function renderCustList() {
   });
 }
 
-// ── Step 3: Issue Types ──────────────────────────────────────────────────────
+// ── Step 3: Data source & launch ─────────────────────────────────────────────
 
 function bindStep3() {
-  const grid = document.getElementById('s3-tmpl-grid');
-  grid.innerHTML = ISSUE_TEMPLATES.map(t => `
-    <label class="setup-tmpl-card ${_selectedTypes.has(t.type) ? 'sel' : ''}">
-      <input type="checkbox" class="setup-tmpl-cb" value="${esc(t.type)}" ${_selectedTypes.has(t.type) ? 'checked' : ''}>
-      <div class="setup-tmpl-name">${esc(t.type)}</div>
-      <div class="setup-tmpl-detail">${esc(t.detail)}</div>
-      <div class="setup-tmpl-meta">${esc(t.channel)} · ${t.severity} severity · ${esc(t.agent)} agent</div>
-    </label>`).join('');
-
-  grid.querySelectorAll('.setup-tmpl-cb').forEach(cb => {
-    cb.addEventListener('change', () => {
-      cb.closest('.setup-tmpl-card').classList.toggle('sel', cb.checked);
-      if (cb.checked) _selectedTypes.add(cb.value);
-      else _selectedTypes.delete(cb.value);
-    });
-  });
-
   document.getElementById('s3-back').onclick = () => goStep(2);
   document.getElementById('s3-launch').onclick = () => {
-    if (_selectedTypes.size === 0) { shake('s3-launch'); return; }
+    const dataUrl = document.getElementById('s3-data-url').value.trim();
+    // The platform needs at least one source of real data: a data source URL
+    // or customers entered in step 2.
+    if (!dataUrl && _customers.length === 0) { shake('s3-data-url'); return; }
     localStorage.setItem(KEY_CUSTS, JSON.stringify(_customers));
-    localStorage.setItem(KEY_TMPLS, JSON.stringify([..._selectedTypes]));
+    if (dataUrl) localStorage.setItem(KEY_DATA, dataUrl);
+    else localStorage.removeItem(KEY_DATA);
     localStorage.setItem('lv_autonomy', document.getElementById('s3-autonomy').value);
     const proxy = document.getElementById('s3-api-url').value.trim();
     if (proxy) localStorage.setItem(KEY_PROXY, proxy);
