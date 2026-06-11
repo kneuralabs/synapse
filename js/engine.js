@@ -13,7 +13,7 @@ function emit(event, payload){ (listeners[event]||[]).forEach(fn=>fn(payload)); 
 export const state = {
   issues: [],            // newest first
   audit: [],             // newest first, capped
-  autonomy: localStorage.getItem('lv_autonomy') || 'guarded', // 'full' | 'guarded' | 'manual'
+  autonomy: localStorage.getItem('lv_autonomy') || 'full', // 'full' | 'guarded' | 'manual'
   running: true,
   kpis: {resolvedToday: 0, autoRate: 0, avgMins: 0, valueRecovered: 0, csat: 91},
   agentLoads: {}         // agentId -> active issue count
@@ -163,6 +163,9 @@ function detectLoop(){
 }
 
 export function startEngine(){
+  // The setup wizard may have written the autonomy choice after this module
+  // was imported — pick it up before the first issue spawns.
+  state.autonomy = localStorage.getItem('lv_autonomy') || 'full';
   spawnIssue();
   spawnIssue();
   setTimeout(()=>spawnIssue(), 1800);

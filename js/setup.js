@@ -5,6 +5,7 @@ const KEY_DONE  = 'snps_setup_done';
 const KEY_ORG   = 'snps_org';
 const KEY_CUSTS = 'snps_customers';
 const KEY_TMPLS = 'snps_templates';
+const KEY_PROXY = 'snps_api_proxy';
 
 export const isSetupDone = () => !!localStorage.getItem(KEY_DONE);
 
@@ -26,8 +27,12 @@ export function getActiveTemplates() {
   } catch { return ISSUE_TEMPLATES; }
 }
 
+export function getApiProxy() {
+  return localStorage.getItem(KEY_PROXY) || '';
+}
+
 export function resetSetup() {
-  [KEY_DONE, KEY_ORG, KEY_CUSTS, KEY_TMPLS].forEach(k => localStorage.removeItem(k));
+  [KEY_DONE, KEY_ORG, KEY_CUSTS, KEY_TMPLS, KEY_PROXY].forEach(k => localStorage.removeItem(k));
 }
 
 export function applyOrgToUI() {
@@ -170,6 +175,10 @@ function bindStep3() {
     if (_selectedTypes.size === 0) { shake('s3-launch'); return; }
     localStorage.setItem(KEY_CUSTS, JSON.stringify(_customers));
     localStorage.setItem(KEY_TMPLS, JSON.stringify([..._selectedTypes]));
+    localStorage.setItem('lv_autonomy', document.getElementById('s3-autonomy').value);
+    const proxy = document.getElementById('s3-api-url').value.trim();
+    if (proxy) localStorage.setItem(KEY_PROXY, proxy);
+    else localStorage.removeItem(KEY_PROXY);
     localStorage.setItem(KEY_DONE, '1');
     document.getElementById('setup-overlay').classList.remove('active');
     if (_onDone) _onDone();

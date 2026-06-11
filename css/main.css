@@ -282,6 +282,8 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 .setup-field-wide{grid-column:span 2}
 .setup-label{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--slate)}
 .setup-label .req{color:var(--accent)}
+.setup-optional{color:var(--slate);text-transform:none;letter-spacing:0;font-size:.68rem}
+.setup-hint{font-size:.7rem;color:var(--slate);line-height:1.5}
 .setup-input{background:var(--card);border:1px solid var(--border);color:var(--chalk);padding:10px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:.85rem;outline:none;transition:border-color .2s;width:100%;-webkit-appearance:none}
 .setup-input:focus{border-color:var(--periwinkle)}
 .setup-input option{background:var(--card);color:var(--chalk)}
