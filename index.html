@@ -172,7 +172,34 @@
   <div class="engine-pill" id="engine-pill" title="Pause / resume the orchestration engine">
     <span class="pulse" id="engine-dot"></span><span id="engine-label">Engine live</span>
   </div>
+  <button class="tb-settings" id="btn-settings" title="Settings — data source &amp; AI service URLs">⚙</button>
   <div class="tb-avatar" title="Profile">KN</div>
+</div>
+
+<!-- SETTINGS DIALOG -->
+<div id="settings-overlay">
+  <div class="setup-modal settings-modal">
+    <div class="setup-title">Settings</div>
+    <div class="setup-sub">Connect or change your data endpoints at any time. Changes take effect immediately.</div>
+    <div class="setup-fields">
+      <div class="setup-field">
+        <label class="setup-label">Data source URL</label>
+        <input class="setup-input" id="set-data-url" type="url" placeholder="https://api.your-company.com/synapse-feed">
+        <div class="setup-hint">Polled every 20 seconds. Must return JSON — either <code>{"customers":[…], "issues":[…], "journeys":[…]}</code> or a bare array of issue records.</div>
+      </div>
+      <div class="setup-field">
+        <label class="setup-label">AI service URL <span class="setup-optional">optional</span></label>
+        <input class="setup-input" id="set-api-url" type="url" placeholder="https://your-backend.example.com/claude  (proxy that holds your Anthropic key)">
+        <div class="setup-hint">Used for live agent runs and the AI Assistant chat. Leave blank to call the Claude API directly — you'll be asked for an API key.</div>
+      </div>
+    </div>
+    <div class="setup-actions settings-actions">
+      <button class="btn btn-o" id="set-rerun">Re-run setup wizard</button>
+      <span class="settings-spacer"></span>
+      <button class="btn btn-o" id="set-cancel">Cancel</button>
+      <button class="btn btn-p" id="set-save">Save</button>
+    </div>
+  </div>
 </div>
 
 <div id="shell">

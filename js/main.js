@@ -9,6 +9,7 @@ import {initChat} from './views/chat.js';
 import {initGovernance} from './views/governance.js';
 import {initValue} from './views/value.js';
 import {isSetupDone, runSetupWizard, applyOrgToUI} from './setup.js';
+import {initSettings} from './settings.js';
 
 document.getElementById('ham').addEventListener('click', toggleSidebar);
 
@@ -26,6 +27,7 @@ initCustomers();
 initChat();
 initGovernance();
 initValue();
+initSettings();
 
 if (isSetupDone()) {
   applyOrgToUI();

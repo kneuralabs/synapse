@@ -22,8 +22,18 @@ export function getDataUrl() {
   return localStorage.getItem(KEY_DATA) || '';
 }
 
+export function setDataUrl(url) {
+  if (url) localStorage.setItem(KEY_DATA, url);
+  else localStorage.removeItem(KEY_DATA);
+}
+
 export function getApiProxy() {
   return localStorage.getItem(KEY_PROXY) || '';
+}
+
+export function setApiProxy(url) {
+  if (url) localStorage.setItem(KEY_PROXY, url);
+  else localStorage.removeItem(KEY_PROXY);
 }
 
 export function resetSetup() {
@@ -145,6 +155,9 @@ function renderCustList() {
 // ── Step 3: Data source & launch ─────────────────────────────────────────────
 
 function bindStep3() {
+  // Pre-fill so re-running the wizard doesn't silently drop existing URLs.
+  document.getElementById('s3-data-url').value = getDataUrl();
+  document.getElementById('s3-api-url').value = getApiProxy();
   document.getElementById('s3-back').onclick = () => goStep(2);
   document.getElementById('s3-launch').onclick = () => {
     const dataUrl = document.getElementById('s3-data-url').value.trim();
@@ -152,12 +165,9 @@ function bindStep3() {
     // or customers entered in step 2.
     if (!dataUrl && _customers.length === 0) { shake('s3-data-url'); return; }
     localStorage.setItem(KEY_CUSTS, JSON.stringify(_customers));
-    if (dataUrl) localStorage.setItem(KEY_DATA, dataUrl);
-    else localStorage.removeItem(KEY_DATA);
+    setDataUrl(dataUrl);
     localStorage.setItem('lv_autonomy', document.getElementById('s3-autonomy').value);
-    const proxy = document.getElementById('s3-api-url').value.trim();
-    if (proxy) localStorage.setItem(KEY_PROXY, proxy);
-    else localStorage.removeItem(KEY_PROXY);
+    setApiProxy(document.getElementById('s3-api-url').value.trim());
     localStorage.setItem(KEY_DONE, '1');
     document.getElementById('setup-overlay').classList.remove('active');
     if (_onDone) _onDone();

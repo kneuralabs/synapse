@@ -281,23 +281,46 @@ async function sync(){
   records.forEach(ingestIssue);
 }
 
-async function syncLoop(){
-  if(state.running){
-    try {
-      await sync();
-      if(state.sourceError){
-        state.sourceError = null;
-        log('governance', 'Data source sync recovered');
-      }
-    } catch(e){
-      if(state.sourceError !== e.message){
-        state.sourceError = e.message;
-        log('governance', `Data source sync failed: ${e.message}`);
-      }
+async function syncOnce(){
+  try {
+    await sync();
+    if(state.sourceError){
+      state.sourceError = null;
+      log('governance', 'Data source sync recovered');
     }
+  } catch(e){
+    if(state.sourceError !== e.message){
+      state.sourceError = e.message;
+      log('governance', `Data source sync failed: ${e.message}`);
+    }
+  }
+  emit('change');
+}
+
+let syncLoopStarted = false;
+
+async function syncLoop(){
+  if(state.running) await syncOnce();
+  setTimeout(syncLoop, SYNC_INTERVAL_MS);
+}
+
+function startSyncLoop(){
+  if(syncLoopStarted) return; // one loop only — it re-reads the URL each poll
+  syncLoopStarted = true;
+  syncLoop();
+}
+
+// Called when the operator sets, changes or clears the data source URL from
+// the Settings dialog or a re-run of the setup wizard.
+export function dataSourceChanged(){
+  if(getDataUrl()){
+    log('governance', 'Data source URL updated — syncing now');
+    if(syncLoopStarted) syncOnce();
+    else startSyncLoop();
+  } else {
+    log('governance', 'Data source disconnected');
     emit('change');
   }
-  setTimeout(syncLoop, SYNC_INTERVAL_MS);
 }
 
 export function startEngine(){
@@ -306,9 +329,9 @@ export function startEngine(){
   state.autonomy = localStorage.getItem('lv_autonomy') || 'full';
   if(getDataUrl()){
     log('governance', `Data source connected — polling every ${SYNC_INTERVAL_MS/1000}s`);
-    syncLoop();
+    startSyncLoop();
   } else {
-    log('governance', 'No data source URL configured — re-run setup to connect one.');
+    log('governance', 'No data source URL configured — open Settings (⚙) to connect one.');
   }
   emit('change');
 }
