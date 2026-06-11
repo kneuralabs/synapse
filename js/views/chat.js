@@ -1,19 +1,26 @@
 import {callClaude} from '../api.js';
 import {esc, mdLite} from '../utils.js';
+import {state, openIssues, approvalQueue} from '../engine.js';
 
 const chatHistory = [];
 let chatBusy = false;
 
-const SYSTEM_PROMPT = `You are Levitate AI, the intelligent assistant embedded in the Levitate Experience Intelligence Platform. You help consultants and enterprise clients with:
-- Transformation strategy across 6 workstreams: Ecosystem Orchestration, Business Transformation, Digital Products & Platforms, Marketing & Content, Commerce, Learning
-- Workstream fit analysis and recommendations
-- KPI frameworks and measurement
-- Client engagement planning and proposal drafting
-- Interpreting data and documents
+// Built fresh per message so the assistant always sees live platform state.
+function systemPrompt(){
+  const open = openIssues().map(i=>`${i.id} ${i.type} (${i.severity}, ${i.channel}) for ${i.customer.name} [${i.customer.segment}, sentiment ${i.customer.sentiment}]`).join('; ') || 'none';
+  const held = approvalQueue().map(i=>`${i.id} ${i.type} (risk ${i.risk})`).join('; ') || 'none';
+  const resolved = state.issues.filter(i=>i.stage===4).slice(0,8).map(i=>`${i.id} ${i.type} → ${i.resolution}`).join('; ') || 'none yet';
+  return `You are Levitate AI, the assistant inside the Levitate Autonomous Experience Orchestration Platform. The platform's AI agents (Service, Sales, Care, Ops, Marketing) automatically detect and resolve customer problems across web, mobile, email, social, contact center, in-store and partner channels, with human-in-the-loop approval for high-risk actions.
 
-Active projects: GlobalBank DX (Financial Services, 68% complete), RetailCo Commerce (Retail, 41%), MediHealth Learning (Healthcare, 15%), GovNext Platform (Government, 90%).
+LIVE PLATFORM STATE
+- Autonomy mode: ${state.autonomy}
+- Issues in flight: ${open}
+- Awaiting human approval: ${held}
+- Resolved this session: ${state.kpis.resolvedToday} (auto rate ${state.kpis.autoRate}%, value recovered $${state.kpis.valueRecovered}, predicted CSAT ${state.kpis.csat}%)
+- Recent resolutions: ${resolved}
 
-Be sharp, specific, consulting-grade. Use concrete examples. Keep responses focused and useful. Format with clear sections when helpful.`;
+Help the operator understand and act on this state: summarize operations, explain agent decisions, flag churn risks, draft customer communications, and advise on guardrail tuning. Be sharp, specific and concise. Use **bold** sparingly for emphasis; plain paragraphs otherwise.`;
+}
 
 export function preFillChat(text){
   document.getElementById('chat-input').value = text;
@@ -32,7 +39,7 @@ async function sendChat(){
   const thinkingEl = appendMsg('ai', '<div class="loading-row"><div class="spinner"></div> Thinking…</div>');
 
   try {
-    const reply = await callClaude({max_tokens:1000, system:SYSTEM_PROMPT, messages:chatHistory});
+    const reply = await callClaude({max_tokens:1000, system:systemPrompt(), messages:chatHistory});
     chatHistory.push({role:'assistant',content:reply});
     thinkingEl.querySelector('.msg-bubble').innerHTML = mdLite(reply);
   } catch(e) {
