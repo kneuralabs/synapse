@@ -9,6 +9,42 @@
 </head>
 <body>
 
+<!-- ═══ SSO GATE ═══ -->
+<div id="sso-gate" style="position:fixed;inset:0;z-index:99999;background:#07091C;display:flex;align-items:center;justify-content:center">
+  <iframe id="sso-frame" src="https://sso.kneuralabs.com/?redirect=postmessage&origin=https://synapse.kneuralabs.com" style="width:100%;height:100%;border:none;display:block;position:absolute;inset:0" allow="identity-credentials-get"></iframe>
+  <div id="sso-denied" style="display:none;text-align:center;font-family:Inter,sans-serif;color:#EEEDF8;position:relative;z-index:1;padding:40px">
+    <div style="font-size:2.5rem;margin-bottom:16px">🚫</div>
+    <div style="font-weight:700;font-size:1.1rem;margin-bottom:8px">Access Denied</div>
+    <div style="font-size:.85rem;color:#7A82AA;margin-bottom:24px">Your account doesn't have access to Synapse.</div>
+    <button onclick="document.getElementById('sso-denied').style.display='none';document.getElementById('sso-frame').style.display='block'" style="background:#6C7FFF;color:#fff;border:none;padding:10px 24px;border-radius:6px;font-family:Inter,sans-serif;font-size:.85rem;cursor:pointer;font-weight:600">Sign in with another account</button>
+  </div>
+</div>
+<script>
+(function(){
+  var SESSION_KEY = 'kn-synapse-auth';
+  var gate = document.getElementById('sso-gate');
+  var frame = document.getElementById('sso-frame');
+  var denied = document.getElementById('sso-denied');
+  function hideGate() {
+    gate.style.transition = 'opacity 0.4s';
+    gate.style.opacity = '0';
+    setTimeout(function(){ gate.style.display = 'none'; }, 420);
+  }
+  try {
+    if (sessionStorage.getItem(SESSION_KEY)) { gate.style.display = 'none'; return; }
+  } catch(e) {}
+  window.addEventListener('message', function(e) {
+    if (!e.origin.match(/^https:\/\/([\w-]+\.)*kneuralabs\.com$|^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/)) return;
+    var d = e.data;
+    if (!d || d.type !== 'kn-auth') return;
+    var hasAccess = d.role === 'admin' || (Array.isArray(d.apps) && d.apps.includes('synapse'));
+    if (!hasAccess) { frame.style.display = 'none'; denied.style.display = 'block'; return; }
+    try { sessionStorage.setItem(SESSION_KEY, '1'); } catch(e2) {}
+    hideGate();
+  });
+})();
+</script>
+
 <!-- SETUP WIZARD OVERLAY -->
 <div id="setup-overlay">
   <div class="setup-modal">
