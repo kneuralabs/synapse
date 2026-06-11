@@ -135,6 +135,21 @@
       <div class="setup-title">Choose issue types to detect</div>
       <div class="setup-sub">Select the customer problem types you want the AI agents to monitor and resolve. All are enabled by default — deselect any that don't apply to your business.</div>
       <div class="setup-tmpl-grid" id="s3-tmpl-grid"></div>
+      <div class="setup-fields">
+        <div class="setup-field">
+          <label class="setup-label">Autonomy level</label>
+          <select class="setup-input" id="s3-autonomy">
+            <option value="full" selected>Full auto — fix every issue the moment it's detected</option>
+            <option value="guarded">Guarded — auto-fix, but hold high-risk actions for my approval</option>
+            <option value="manual">Manual — hold every action for my approval</option>
+          </select>
+        </div>
+        <div class="setup-field">
+          <label class="setup-label">AI service URL <span class="setup-optional">optional</span></label>
+          <input class="setup-input" id="s3-api-url" type="url" placeholder="https://your-backend.example.com/claude  (proxy that holds your Anthropic key)">
+          <div class="setup-hint">Used by the AI Assistant chat. Leave blank to call the Claude API directly — you'll be asked for an API key the first time you chat.</div>
+        </div>
+      </div>
       <div class="setup-actions">
         <button class="btn btn-o" id="s3-back">← Back</button>
         <button class="btn btn-p" id="s3-launch">Launch Synapse →</button>

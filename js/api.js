@@ -1,4 +1,5 @@
 import {API_PROXY, MODEL} from './config.js';
+import {getApiProxy} from './setup.js';
 
 function getApiKey(){
   let key = localStorage.getItem('anthropic_api_key');
@@ -10,9 +11,10 @@ function getApiKey(){
 }
 
 export async function callClaude(body){
-  const url = API_PROXY || 'https://api.anthropic.com/v1/messages';
+  const proxy = getApiProxy() || API_PROXY;
+  const url = proxy || 'https://api.anthropic.com/v1/messages';
   const headers = {'Content-Type':'application/json'};
-  if(!API_PROXY){
+  if(!proxy){
     const key = getApiKey();
     if(!key) throw new Error('No API key provided.');
     headers['x-api-key'] = key;
