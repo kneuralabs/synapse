@@ -64,7 +64,7 @@
     <div class="setup-step" id="setup-step-2">
       <div class="setup-eyebrow">Step 2 of 3</div>
       <div class="setup-title">Add customers to monitor</div>
-      <div class="setup-sub">Add at least one customer. The engine will detect and resolve issues for every customer you add here. You can add more later from Customer 360.</div>
+      <div class="setup-sub">Add the customers you want the engine to monitor, or skip this step and let your data source supply them in step 3.</div>
       <div class="setup-cust-form">
         <div class="setup-fields setup-fields-grid">
           <div class="setup-field">
@@ -129,13 +129,17 @@
       </div>
     </div>
 
-    <!-- Step 3 — Issue types -->
+    <!-- Step 3 — Data source & launch -->
     <div class="setup-step" id="setup-step-3">
       <div class="setup-eyebrow">Step 3 of 3</div>
-      <div class="setup-title">Choose issue types to detect</div>
-      <div class="setup-sub">Select the customer problem types you want the AI agents to monitor and resolve. All are enabled by default — deselect any that don't apply to your business.</div>
-      <div class="setup-tmpl-grid" id="s3-tmpl-grid"></div>
+      <div class="setup-title">Connect your data source</div>
+      <div class="setup-sub">Synapse fetches real customers, issues and journeys from your data source — nothing is simulated. Required if you didn't add customers in step 2.</div>
       <div class="setup-fields">
+        <div class="setup-field">
+          <label class="setup-label">Data source URL</label>
+          <input class="setup-input" id="s3-data-url" type="url" placeholder="https://api.your-company.com/synapse-feed">
+          <div class="setup-hint">Polled every 20 seconds. Must return JSON — either <code>{"customers":[…], "issues":[…], "journeys":[…]}</code> or a bare array of issue records.</div>
+        </div>
         <div class="setup-field">
           <label class="setup-label">Autonomy level</label>
           <select class="setup-input" id="s3-autonomy">
@@ -243,7 +247,6 @@
         <div class="dash-title">Issue <span>Stream</span></div>
         <div class="dash-sub">Every customer problem, detected and resolved by the agent pipeline.</div>
       </div>
-      <button class="btn btn-o" id="btn-simulate">⚡ Simulate incident</button>
     </div>
     <div class="issue-cols">
       <div class="issue-list-wrap">

@@ -1,6 +1,6 @@
 import {callClaude} from '../api.js';
 import {esc, mdLite} from '../utils.js';
-import {state, openIssues, approvalQueue} from '../engine.js';
+import {state, openIssues, approvalQueue, predictedCsat} from '../engine.js';
 
 const chatHistory = [];
 let chatBusy = false;
@@ -16,7 +16,7 @@ LIVE PLATFORM STATE
 - Autonomy mode: ${state.autonomy}
 - Issues in flight: ${open}
 - Awaiting human approval: ${held}
-- Resolved this session: ${state.kpis.resolvedToday} (auto rate ${state.kpis.autoRate}%, value recovered $${state.kpis.valueRecovered}, predicted CSAT ${state.kpis.csat}%)
+- Resolved this session: ${state.kpis.resolvedToday} (auto rate ${state.kpis.autoRate}%, value recovered $${state.kpis.valueRecovered}, predicted CSAT ${predictedCsat() ?? 'n/a'}%)
 - Recent resolutions: ${resolved}
 
 Help the operator understand and act on this state: summarize operations, explain agent decisions, flag churn risks, draft customer communications, and advise on guardrail tuning. Be sharp, specific and concise. Use **bold** sparingly for emphasis; plain paragraphs otherwise.`;

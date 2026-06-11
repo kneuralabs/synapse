@@ -296,14 +296,6 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 .setup-cust-ltv{font-size:.7rem;color:var(--slate);white-space:nowrap;flex-shrink:0}
 .setup-cust-del{background:none;border:none;color:var(--slate);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px;transition:color .15s;flex-shrink:0}
 .setup-cust-del:hover{color:var(--accent)}
-.setup-tmpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-height:320px;overflow-y:auto;padding-right:4px}
-.setup-tmpl-card{display:flex;flex-direction:column;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 36px 12px 12px;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
-.setup-tmpl-card:hover{border-color:var(--periwinkle)}
-.setup-tmpl-card.sel{border-color:var(--periwinkle);background:var(--periwinkle-dim)}
-.setup-tmpl-cb{position:absolute;top:11px;right:11px;cursor:pointer;accent-color:var(--periwinkle);width:15px;height:15px}
-.setup-tmpl-name{font-size:.82rem;font-weight:600;color:var(--chalk)}
-.setup-tmpl-detail{font-size:.72rem;color:var(--slate);line-height:1.45}
-.setup-tmpl-meta{font-size:.63rem;letter-spacing:.05em;text-transform:uppercase;color:var(--periwinkle);margin-top:2px}
 .setup-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:4px}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .shake{animation:shake .35s ease}
@@ -311,5 +303,4 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
   .setup-modal{padding:24px}
   .setup-fields-grid{grid-template-columns:1fr}
   .setup-field-wide{grid-column:span 1}
-  .setup-tmpl-grid{grid-template-columns:1fr}
 }

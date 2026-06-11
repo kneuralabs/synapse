@@ -1,5 +1,5 @@
 import {AGENTS} from '../data.js';
-import {state, on} from '../engine.js';
+import {state, on, predictedCsat} from '../engine.js';
 import {esc} from '../utils.js';
 
 function render(){
@@ -11,7 +11,7 @@ function render(){
     <div class="kpi"><div class="kpi-val">$${k.valueRecovered.toLocaleString()} <span class="up">↑</span></div><div class="kpi-lbl">Revenue protected</div></div>
     <div class="kpi"><div class="kpi-val">${hoursSaved}h <span class="up">↑</span></div><div class="kpi-lbl">Human hours saved</div></div>
     <div class="kpi"><div class="kpi-val">${k.avgMins || '—'}<span style="font-size:.9rem">min</span></div><div class="kpi-lbl">Avg manual effort avoided / issue</div></div>
-    <div class="kpi"><div class="kpi-val">${k.csat}% <span class="up">↑</span></div><div class="kpi-lbl">Predicted CSAT</div></div>`;
+    <div class="kpi"><div class="kpi-val">${predictedCsat() ?? '—'}${predictedCsat()!=null?'%':''}</div><div class="kpi-lbl">Predicted CSAT</div></div>`;
 
   const byAgent = AGENTS.map(a=>({a, v: resolved.filter(i=>i.agent===a.id).reduce((s,i)=>s+i.value,0)}));
   const max = Math.max(1, ...byAgent.map(x=>x.v));

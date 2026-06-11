@@ -1,4 +1,4 @@
-import {getCustomers} from '../setup.js';
+import {allCustomers} from '../datasource.js';
 import {state, on} from '../engine.js';
 import {esc} from '../utils.js';
 
@@ -7,7 +7,7 @@ let selectedId = null;
 function sentClass(s){ return s>=70 ? 'good' : s>=55 ? 'mid' : 'bad'; }
 
 function renderGrid(){
-  document.getElementById('customer-grid').innerHTML = getCustomers().map(c=>{
+  document.getElementById('customer-grid').innerHTML = allCustomers().map(c=>{
     const open = state.issues.filter(i=>i.stage<4 && i.customer.id===c.id).length;
     return `<div class="proj-card ${c.id===selectedId?'sel':''}" data-id="${c.id}">
       <div class="proj-card-top">
@@ -22,12 +22,12 @@ function renderGrid(){
         ${open?`<span class="ws-pill pill-hot">${open} issue${open>1?'s':''} being resolved</span>`:''}
       </div>
     </div>`;
-  }).join('');
+  }).join('') || '<div class="empty-hint">No customers yet. Add them in setup or include a <code>customers</code> array in your data source response.</div>';
 }
 
 function renderDetail(){
   const el = document.getElementById('customer-detail');
-  const c = getCustomers().find(x=>x.id===selectedId);
+  const c = allCustomers().find(x=>x.id===selectedId);
   if(!c){ el.style.display='none'; return; }
   const history = state.issues.filter(i=>i.customer.id===c.id);
   el.style.display='block';

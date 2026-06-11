@@ -1,4 +1,4 @@
-import {state, on, setAutonomy, setRunning, openIssues, approvalQueue} from '../engine.js';
+import {state, on, setAutonomy, setRunning, openIssues, approvalQueue, predictedCsat} from '../engine.js';
 import {AGENTS, CHANNELS} from '../data.js';
 import {esc} from '../utils.js';
 
@@ -11,7 +11,7 @@ function renderKpis(){
     <div class="kpi"><div class="kpi-val">${k.resolvedToday} <span class="up">↑</span></div><div class="kpi-lbl">Auto-resolved today</div></div>
     <div class="kpi"><div class="kpi-val">${k.autoRate}%</div><div class="kpi-lbl">Fully autonomous rate</div></div>
     <div class="kpi"><div class="kpi-val">${fmtMoney(k.valueRecovered)} <span class="up">↑</span></div><div class="kpi-lbl">Value recovered</div></div>
-    <div class="kpi"><div class="kpi-val">${k.csat}% <span class="up">↑</span></div><div class="kpi-lbl">Predicted CSAT</div></div>`;
+    <div class="kpi"><div class="kpi-val">${predictedCsat() ?? '—'}${predictedCsat()!=null?'%':''}</div><div class="kpi-lbl">Predicted CSAT</div></div>`;
 }
 
 function renderFleet(){
