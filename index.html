@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Levitate — Experience Intelligence Platform</title>
+<title>Levitate — Autonomous Experience Orchestration</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/main.css">
 </head>
@@ -13,8 +13,11 @@
 <div id="topbar">
   <div class="ham" id="ham"><span></span><span></span><span></span></div>
   <div class="tb-logo">Levi<span>tate</span></div>
-  <div class="tb-badge">Intelligence Platform</div>
+  <div class="tb-badge">Autonomous Orchestration</div>
   <div class="tb-spacer"></div>
+  <div class="engine-pill" id="engine-pill" title="Pause / resume the orchestration engine">
+    <span class="pulse" id="engine-dot"></span><span id="engine-label">Engine live</span>
+  </div>
   <div class="tb-avatar" title="Profile">KN</div>
 </div>
 
@@ -22,27 +25,26 @@
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
-  <div class="sb-section">Workspace</div>
-  <button class="sb-item active" data-view="dashboard"><span class="icon">⊞</span>Dashboard</button>
-  <button class="sb-item" data-view="strategy"><span class="icon">◈</span>Strategy Builder</button>
-  <button class="sb-item" data-view="projects"><span class="icon">⬡</span>Projects<span class="badge">4</span></button>
-  <button class="sb-item" data-view="chat"><span class="icon">✦</span>AI Assistant</button>
-  <button class="sb-item" data-view="docs"><span class="icon">⟁</span>Documents</button>
+  <div class="sb-section">Orchestration</div>
+  <button class="sb-item active" data-view="tower"><span class="icon">⊞</span>Control Tower</button>
+  <button class="sb-item" data-view="issues"><span class="icon">⚡</span>Issue Stream<span class="badge" id="badge-issues">0</span></button>
+  <button class="sb-item" data-view="approvals"><span class="icon">✋</span>Approvals<span class="badge badge-warn" id="badge-approvals" style="display:none">0</span></button>
+  <button class="sb-item" data-view="journeys"><span class="icon">◈</span>Journeys</button>
 
-  <div class="sb-section">Workstreams</div>
-  <button class="sb-item" data-view="strategy" data-ws="Ecosystem Orchestration"><span class="icon" style="color:var(--periwinkle)">●</span>Ecosystem</button>
-  <button class="sb-item" data-view="strategy" data-ws="Business Transformation"><span class="icon" style="color:var(--green)">●</span>Transformation</button>
-  <button class="sb-item" data-view="strategy" data-ws="Digital Products"><span class="icon" style="color:#FFD97D">●</span>Digital Products</button>
-  <button class="sb-item" data-view="strategy" data-ws="Marketing & Content"><span class="icon" style="color:var(--accent)">●</span>Marketing</button>
-  <button class="sb-item" data-view="strategy" data-ws="Commerce"><span class="icon" style="color:#A78BFA">●</span>Commerce</button>
-  <button class="sb-item" data-view="strategy" data-ws="Learning"><span class="icon" style="color:#38BDF8">●</span>Learning</button>
+  <div class="sb-section">Intelligence</div>
+  <button class="sb-item" data-view="customers"><span class="icon">⬡</span>Customer 360</button>
+  <button class="sb-item" data-view="chat"><span class="icon">✦</span>AI Assistant</button>
+
+  <div class="sb-section">Trust</div>
+  <button class="sb-item" data-view="governance"><span class="icon">🛡</span>Governance</button>
+  <button class="sb-item" data-view="value"><span class="icon">📈</span>Value Hub</button>
 
   <div class="sb-bottom">
     <div class="sb-user">
       <div class="tb-avatar">KN</div>
       <div class="sb-user-info">
         <div class="sb-user-name">Kneuralabs</div>
-        <div class="sb-user-role">Consultant</div>
+        <div class="sb-user-role">Experience Operator</div>
       </div>
     </div>
   </div>
@@ -51,143 +53,161 @@
 <!-- MAIN -->
 <main id="main">
 
-  <!-- DASHBOARD -->
-  <div class="view active" id="v-dashboard">
+  <!-- CONTROL TOWER -->
+  <div class="view active" id="v-tower">
     <div class="dash-header">
       <div>
-        <div class="dash-title">Good morning, <span>Kneuralabs</span> ✦</div>
-        <div class="dash-sub">Here's your engagement overview for today.</div>
+        <div class="dash-title">Agentic AI <span>Control Tower</span></div>
+        <div class="dash-sub">Autonomous agents detecting and resolving customer problems across every channel — in real time.</div>
       </div>
-      <button class="btn btn-p" id="btn-new-strategy">+ New Strategy</button>
+      <div class="autonomy-ctl">
+        <span class="autonomy-lbl">Autonomy</span>
+        <div class="seg" id="autonomy-seg">
+          <button data-mode="full">Full auto</button>
+          <button data-mode="guarded">Guarded</button>
+          <button data-mode="manual">Manual</button>
+        </div>
+      </div>
     </div>
-    <div class="kpi-grid">
-      <div class="kpi"><div class="kpi-val">4 <span class="up">↑</span></div><div class="kpi-lbl">Active Projects</div></div>
-      <div class="kpi"><div class="kpi-val">12 <span class="up">↑</span></div><div class="kpi-lbl">Strategies Generated</div></div>
-      <div class="kpi"><div class="kpi-val">8 <span class="up">↑</span></div><div class="kpi-lbl">Docs Analyzed</div></div>
-      <div class="kpi"><div class="kpi-val">94%<span class="up">↑</span></div><div class="kpi-lbl">Client Satisfaction</div></div>
-    </div>
+    <div class="kpi-grid" id="tower-kpis"></div>
     <div class="two-col">
       <div class="panel">
-        <div class="panel-title">Workstream Activity <span class="eyebrow">This month</span></div>
-        <div id="ws-activity"></div>
+        <div class="panel-title">Agent Fleet <span class="eyebrow">Multi-agent collaboration</span></div>
+        <div id="agent-fleet"></div>
       </div>
       <div class="panel">
-        <div class="panel-title">Recent Activity <span class="eyebrow">Live</span></div>
-        <div id="activity-feed"></div>
+        <div class="panel-title">Live Resolution Feed <span class="eyebrow">Autonomous actions</span></div>
+        <div id="tower-feed" class="feed-scroll"></div>
       </div>
     </div>
     <div class="panel">
-      <div class="panel-title">Active Engagements</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:4px" id="dash-projects"></div>
+      <div class="panel-title">Experience Channels <span class="eyebrow">Signal health</span></div>
+      <div class="channel-grid" id="channel-grid"></div>
     </div>
   </div>
 
-  <!-- STRATEGY BUILDER -->
-  <div class="view" id="v-strategy">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+  <!-- ISSUE STREAM -->
+  <div class="view" id="v-issues">
+    <div class="dash-header">
       <div>
-        <div class="dash-title">Strategy <span style="color:var(--periwinkle)">Builder</span></div>
-        <div class="dash-sub">Submit a brief — get an AI-powered transformation plan.</div>
+        <div class="dash-title">Issue <span>Stream</span></div>
+        <div class="dash-sub">Every customer problem, detected and resolved by the agent pipeline.</div>
       </div>
+      <button class="btn btn-o" id="btn-simulate">⚡ Simulate incident</button>
     </div>
-    <div class="brief-panel">
-      <h3>Client Brief</h3>
-      <div class="form-grid">
-        <div class="field"><label>Client name</label><input id="f-client" type="text" placeholder="e.g. GlobalBank PLC"></div>
-        <div class="field"><label>Industry</label>
-          <select id="f-industry">
-            <option value="">Select industry</option>
-            <option>Financial Services</option><option>Retail & Commerce</option>
-            <option>Healthcare</option><option>Technology</option>
-            <option>Manufacturing</option><option>Government</option><option>Media & Entertainment</option>
-          </select>
+    <div class="issue-cols">
+      <div class="issue-list-wrap">
+        <div class="issue-filters" id="issue-filters">
+          <button class="chip on" data-f="all">All</button>
+          <button class="chip" data-f="open">In progress</button>
+          <button class="chip" data-f="approval">Needs approval</button>
+          <button class="chip" data-f="resolved">Resolved</button>
         </div>
-        <div class="field full"><label>Transformation objective</label>
-          <textarea id="f-objective" rows="3" placeholder="Describe what the client wants to achieve — growth, efficiency, digital shift, customer experience…"></textarea>
-        </div>
-        <div class="field full"><label>Workstreams to activate</label>
-          <div class="ws-chips" id="ws-chips"></div>
-        </div>
-        <div class="field"><label>Timeline</label>
-          <select id="f-timeline"><option>3 months</option><option>6 months</option><option selected>12 months</option><option>18+ months</option></select>
-        </div>
-        <div class="field"><label>Budget range</label>
-          <select id="f-budget"><option>Under $500K</option><option selected>$500K – $2M</option><option>$2M – $10M</option><option>$10M+</option></select>
-        </div>
+        <div id="issue-list"></div>
       </div>
-      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-p" id="btn-generate">Generate transformation plan</button>
-        <button class="btn btn-o" id="btn-clear">Clear</button>
-      </div>
-    </div>
-    <div class="result-panel" id="strategy-result">
-      <h3 id="result-title">Transformation Plan</h3>
-      <div class="ai-prose" id="result-body"></div>
-      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-p" id="btn-save">Save to projects</button>
-        <button class="btn btn-o" id="btn-export">Export PDF</button>
+      <div class="panel issue-detail" id="issue-detail">
+        <div class="empty-hint">Select an issue to see the autonomous resolution timeline.</div>
       </div>
     </div>
   </div>
 
-  <!-- PROJECTS -->
-  <div class="view" id="v-projects">
-    <div class="proj-header">
+  <!-- APPROVALS -->
+  <div class="view" id="v-approvals">
+    <div class="dash-header">
       <div>
-        <div class="dash-title">Projects & <span style="color:var(--periwinkle)">Workstreams</span></div>
-        <div class="dash-sub">Track every active engagement.</div>
+        <div class="dash-title">Human-in-the-Loop <span>Approvals</span></div>
+        <div class="dash-sub">High-risk autonomous actions held for your decision, per governance guardrails.</div>
       </div>
-      <button class="btn btn-p" id="btn-new-project">+ New project</button>
     </div>
-    <div class="proj-grid" id="proj-grid"></div>
-    <div class="proj-detail" id="proj-detail"></div>
+    <div id="approval-list"></div>
   </div>
 
-  <!-- AI CHAT -->
+  <!-- JOURNEYS -->
+  <div class="view" id="v-journeys">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Journey <span>Engine</span></div>
+        <div class="dash-sub">Orchestrated journeys with next-best-action recommendations per stage.</div>
+      </div>
+    </div>
+    <div id="journey-list"></div>
+  </div>
+
+  <!-- CUSTOMER 360 -->
+  <div class="view" id="v-customers">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Customer <span>Digital Twins</span></div>
+        <div class="dash-sub">Unified context across customers, interactions and operations.</div>
+      </div>
+    </div>
+    <div class="proj-grid" id="customer-grid"></div>
+    <div class="panel issue-detail show" id="customer-detail" style="display:none"></div>
+  </div>
+
+  <!-- AI ASSISTANT -->
   <div class="view" id="v-chat">
     <div class="chat-header">
       <div class="chat-avatar">✦</div>
-      <div><div class="chat-title">Levitate AI</div><div class="chat-subtitle">Experience Intelligence Assistant</div></div>
+      <div><div class="chat-title">Levitate AI</div><div class="chat-subtitle">Experience Orchestration Assistant</div></div>
       <div class="chat-online"></div>
     </div>
     <div class="chat-msgs" id="chat-msgs">
       <div class="msg ai">
         <div class="msg-av">L</div>
-        <div class="msg-bubble">Hi! I'm your Levitate AI assistant. I can help you build transformation strategies, analyze workstream fit, draft client proposals, interpret data, and answer questions about your engagements.<br><br>What are we working on today?</div>
+        <div class="msg-bubble">Hi! I'm your Levitate orchestration assistant. I can explain why an issue was resolved a certain way, recommend next best actions, draft customer communications, and answer questions about your live operations.<br><br>What would you like to know?</div>
       </div>
     </div>
     <div class="chat-suggestions" id="chat-suggestions">
-      <button class="sug-chip">Which workstream fits a retail client?</button>
-      <button class="sug-chip">Draft an executive summary for GlobalBank</button>
-      <button class="sug-chip">What KPIs should we track for commerce?</button>
-      <button class="sug-chip">Explain ecosystem orchestration simply</button>
+      <button class="sug-chip">Summarize today's autonomous resolutions</button>
+      <button class="sug-chip">Which customers are at churn risk and why?</button>
+      <button class="sug-chip">Draft an apology email for a delivery delay</button>
+      <button class="sug-chip">How should I tune the approval guardrails?</button>
     </div>
     <div class="chat-bar">
-      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask anything about your engagements…"></textarea>
+      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask anything about your customers and operations…"></textarea>
       <button class="chat-send" id="chat-send"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
     </div>
   </div>
 
-  <!-- DOCUMENTS -->
-  <div class="view" id="v-docs">
-    <div>
-      <div class="dash-title">Document <span style="color:var(--periwinkle)">Analysis</span></div>
-      <div class="dash-sub">Upload client docs for AI-powered insight extraction.</div>
-    </div>
-    <div class="upload-zone" id="upload-zone">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6C7FFF" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-      <div class="upload-title">Drop files here or click to upload</div>
-      <div class="upload-sub">PDF, DOCX, TXT — up to 25MB each</div>
-    </div>
-    <input type="file" id="file-input" style="display:none" accept=".pdf,.doc,.docx,.txt" multiple>
-    <div class="doc-list" id="doc-list"></div>
-    <div class="doc-analysis" id="doc-analysis">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <div class="spinner"></div>
-        <span style="font-size:.85rem;color:var(--slate)" id="analysis-status">Analyzing document…</span>
+  <!-- GOVERNANCE -->
+  <div class="view" id="v-governance">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Governance & <span>Trust</span></div>
+        <div class="dash-sub">Guardrails, oversight and a full audit trail of every autonomous action.</div>
       </div>
-      <div class="insight-grid" id="insight-grid"></div>
-      <div style="margin-top:16px" id="analysis-prose"></div>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title">Guardrails <span class="eyebrow">Responsible AI</span></div>
+        <div id="guardrail-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Audit Trail <span class="eyebrow">Logs · Alerts · Reports</span></div>
+        <div id="audit-list" class="feed-scroll"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALUE HUB -->
+  <div class="view" id="v-value">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">Business <span>Value Hub</span></div>
+        <div class="dash-sub">Close the loop: insights → actions → outcomes.</div>
+      </div>
+    </div>
+    <div class="kpi-grid" id="value-kpis"></div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-title">Value Recovered by Agent <span class="eyebrow">Today</span></div>
+        <div id="value-agents"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Resolution Outcomes <span class="eyebrow">Live</span></div>
+        <div id="value-outcomes"></div>
+      </div>
     </div>
   </div>
 

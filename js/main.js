@@ -1,10 +1,13 @@
 import {nav, toggleSidebar} from './router.js';
-import {selectWS} from './views/strategy.js';
-import {initDashboard} from './views/dashboard.js';
-import {initStrategy} from './views/strategy.js';
-import {initProjects} from './views/projects.js';
+import {startEngine} from './engine.js';
+import {initTower} from './views/tower.js';
+import {initIssues} from './views/issues.js';
+import {initApprovals} from './views/approvals.js';
+import {initJourneys} from './views/journeys.js';
+import {initCustomers} from './views/customers.js';
 import {initChat} from './views/chat.js';
-import {initDocs} from './views/docs.js';
+import {initGovernance} from './views/governance.js';
+import {initValue} from './views/value.js';
 
 document.getElementById('ham').addEventListener('click', toggleSidebar);
 
@@ -12,11 +15,15 @@ document.getElementById('sidebar').addEventListener('click', e=>{
   const btn = e.target.closest('.sb-item[data-view]');
   if(!btn) return;
   nav(btn.dataset.view, btn);
-  if(btn.dataset.ws) selectWS(btn.dataset.ws);
 });
 
-initDashboard();
-initStrategy();
-initProjects();
+initTower();
+initIssues();
+initApprovals();
+initJourneys();
+initCustomers();
 initChat();
-initDocs();
+initGovernance();
+initValue();
+
+startEngine();
