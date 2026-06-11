@@ -8,6 +8,7 @@ import {initCustomers} from './views/customers.js';
 import {initChat} from './views/chat.js';
 import {initGovernance} from './views/governance.js';
 import {initValue} from './views/value.js';
+import {isSetupDone, runSetupWizard, applyOrgToUI} from './setup.js';
 
 document.getElementById('ham').addEventListener('click', toggleSidebar);
 
@@ -26,4 +27,9 @@ initChat();
 initGovernance();
 initValue();
 
-startEngine();
+if (isSetupDone()) {
+  applyOrgToUI();
+  startEngine();
+} else {
+  runSetupWizard(() => startEngine());
+}

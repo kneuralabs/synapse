@@ -1,4 +1,4 @@
-// Static reference data for the Levitate Autonomous Experience Orchestration Platform.
+// Static reference data for the Synapse Autonomous Experience Orchestration Platform.
 
 export const CHANNELS = [
   {id:'web',     name:'Web',            icon:'🌐'},
@@ -16,25 +16,6 @@ export const AGENTS = [
   {id:'care',      name:'Care Agent',      scope:'Sentiment & proactive outreach', color:'#FFD97D'},
   {id:'ops',       name:'Ops Agent',       scope:'Fulfilment & system actions',    color:'#FF6B6B'},
   {id:'marketing', name:'Marketing Agent', scope:'Personalization & campaigns',    color:'#A78BFA'}
-];
-
-export const CUSTOMERS = [
-  {id:'C-1042', name:'Amara Okafor',   segment:'Premium',    ltv:18400, tenure:'4 yrs', channelPref:'mobile', sentiment:72,
-   journey:'Renewal', persona:'High-value subscriber, low tolerance for friction.'},
-  {id:'C-2207', name:'Diego Ramírez',  segment:'Growth',     ltv:6200,  tenure:'14 mo', channelPref:'web', sentiment:58,
-   journey:'Onboarding', persona:'New power-user, exploring advanced features.'},
-  {id:'C-3315', name:'Mei-Lin Chow',   segment:'Premium',    ltv:24750, tenure:'6 yrs', channelPref:'email', sentiment:81,
-   journey:'Expansion', persona:'Long-tenure advocate, responds to early access.'},
-  {id:'C-4521', name:'Tunde Adeyemi',  segment:'Standard',   ltv:2900,  tenure:'8 mo',  channelPref:'social', sentiment:44,
-   journey:'At-risk', persona:'Price-sensitive, two recent support escalations.'},
-  {id:'C-5188', name:'Sofia Petrova',  segment:'Growth',     ltv:8100,  tenure:'2 yrs', channelPref:'contact', sentiment:63,
-   journey:'Support', persona:'Frequent contact-center caller, prefers humans.'},
-  {id:'C-6090', name:'James Whitfield',segment:'Enterprise', ltv:96000, tenure:'3 yrs', channelPref:'partner', sentiment:69,
-   journey:'Renewal', persona:'B2B account owner, contract renews next quarter.'},
-  {id:'C-7732', name:'Yuki Tanaka',    segment:'Standard',   ltv:1850,  tenure:'5 mo',  channelPref:'mobile', sentiment:55,
-   journey:'Onboarding', persona:'Trial convert, hasn’t activated key features.'},
-  {id:'C-8414', name:'Fatima Al-Rashid',segment:'Premium',   ltv:15300, tenure:'5 yrs', channelPref:'store', sentiment:77,
-   journey:'Loyalty', persona:'Omnichannel shopper, high in-store attachment.'}
 ];
 
 // Problem templates the detection layer draws from. `risk` drives the
