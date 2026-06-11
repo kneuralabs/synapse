@@ -297,6 +297,13 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 .setup-cust-del{background:none;border:none;color:var(--slate);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px;transition:color .15s;flex-shrink:0}
 .setup-cust-del:hover{color:var(--accent)}
 .setup-actions{display:flex;justify-content:flex-end;gap:10px;padding-top:4px}
+.fleet-btn{background:none;border:none;color:var(--slate);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px;transition:color .15s;flex-shrink:0}
+.fleet-btn:hover{color:var(--chalk)}
+.fleet-add{margin-top:10px;width:100%}
+.fleet-form{display:flex;flex-direction:column;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin:6px 0}
+.fleet-form-row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.fleet-color{width:44px;height:34px;padding:2px;border:1px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;flex-shrink:0}
+.fleet-form-actions{display:flex;gap:8px}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .shake{animation:shake .35s ease}
 @media(max-width:600px){

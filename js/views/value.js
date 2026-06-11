@@ -1,4 +1,4 @@
-import {AGENTS} from '../data.js';
+import {getAgents} from '../agents.js';
 import {state, on, predictedCsat} from '../engine.js';
 import {esc} from '../utils.js';
 
@@ -13,12 +13,12 @@ function render(){
     <div class="kpi"><div class="kpi-val">${k.avgMins || '—'}<span style="font-size:.9rem">min</span></div><div class="kpi-lbl">Avg manual effort avoided / issue</div></div>
     <div class="kpi"><div class="kpi-val">${predictedCsat() ?? '—'}${predictedCsat()!=null?'%':''}</div><div class="kpi-lbl">Predicted CSAT</div></div>`;
 
-  const byAgent = AGENTS.map(a=>({a, v: resolved.filter(i=>i.agent===a.id).reduce((s,i)=>s+i.value,0)}));
+  const byAgent = getAgents().map(a=>({a, v: resolved.filter(i=>i.agent===a.id).reduce((s,i)=>s+i.value,0)}));
   const max = Math.max(1, ...byAgent.map(x=>x.v));
   document.getElementById('value-agents').innerHTML = byAgent.map(({a,v})=>`
     <div class="ws-row">
-      <span class="ws-dot" style="background:${a.color}"></span>
-      <span class="ws-name">${a.name}</span>
+      <span class="ws-dot" style="background:${esc(a.color)}"></span>
+      <span class="ws-name">${esc(a.name)}</span>
       <div class="ws-bar-wrap"><div class="ws-bar" style="width:${Math.round(v/max*100)}%;background:${a.color}"></div></div>
       <span class="ws-pct" style="width:54px">$${v.toLocaleString()}</span>
     </div>`).join('');

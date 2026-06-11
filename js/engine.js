@@ -6,6 +6,8 @@
 import {STAGES} from './data.js';
 import {getDataUrl} from './setup.js';
 import {fetchSourceData, allCustomers, normalizeCustomer, registerCustomer} from './datasource.js';
+import {agentById, getAgents, resolveAgentId} from './agents.js';
+import {callClaude} from './api.js';
 
 const SYNC_INTERVAL_MS = 20000;
 
@@ -83,6 +85,7 @@ export function ingestIssue(rec){
   const customer = resolveCustomer(rec);
   if(!customer) return null; // no customer context — cannot orchestrate
   seenSourceKeys.add(key);
+  const hasSourcePlaybook = Array.isArray(rec.playbook) && rec.playbook.length > 0;
   const issue = {
     id: 'INC-' + String(nextId++).padStart(4,'0'),
     sourceId: rec.id ?? null,
@@ -91,11 +94,16 @@ export function ingestIssue(rec){
     channel: rec.channel || 'web',
     severity: rec.severity || 'medium',
     risk: rec.risk || 'medium',
-    agent: rec.agent || 'service',
-    playbook: Array.isArray(rec.playbook) && rec.playbook.length
+    agent: resolveAgentId(rec.agent),
+    playbook: hasSourcePlaybook
       ? rec.playbook
       : ['Triage with customer context', 'Select and execute the standard resolution playbook', 'Confirm outcome with the customer'],
+    // Source-supplied playbook/resolution are authoritative; the live agent
+    // run only fills in what the data source didn't provide.
+    sourcePlaybook: hasSourcePlaybook,
+    sourceResolution: !!rec.resolution,
     resolution: rec.resolution || `${rec.type} resolved per playbook; customer notified.`,
+    ai: null,                       // output of the live agent run
     value: Number(rec.value) || 0,
     mins: Number(rec.mins) || 0,
     customer,
@@ -108,10 +116,48 @@ export function ingestIssue(rec){
   };
   state.issues.unshift(issue);
   state.agentLoads[issue.agent] = (state.agentLoads[issue.agent]||0) + 1;
-  log('detect', `${issue.id} — ${issue.type} detected for ${customer.name} (${issue.channel})`, issue);
+  log('detect', `${issue.id} — ${issue.type} detected for ${customer.name} (${issue.channel}) — assigned to ${agentById(issue.agent).name}`, issue);
   emit('change');
-  scheduleAdvance(issue);
+  runAgent(issue);
   return issue;
+}
+
+// ── Live agent run ───────────────────────────────────────────────────────
+// Each issue is worked by its assigned agent through a real AI call: the
+// agent triages the problem, decides the playbook, and writes the execution
+// and resolution notes. Nothing is canned. If the AI service is unreachable
+// (or the operator declines to supply a key), the pipeline still runs using
+// the data source's own playbook/resolution.
+
+let aiDown = false; // operator declined an API key — stop re-prompting per issue
+
+async function runAgent(issue){
+  const agent = agentById(issue.agent);
+  if(!aiDown){
+    try {
+      const reply = await callClaude({max_tokens:700,
+        system:`You are "${agent.name}" (${agent.scope}), an autonomous agent inside the Synapse customer-experience orchestration platform. You work real customer problems. Respond with strict JSON only — no markdown, no code fences, no commentary.`,
+        messages:[{role:'user', content:
+`Work this customer problem and report your output as JSON.
+
+Issue: ${issue.type} (${issue.severity} severity, ${issue.risk} risk, ${issue.channel} channel)
+Detail: ${issue.detail}
+Customer: ${issue.customer.name} — ${issue.customer.segment} segment, LTV $${issue.customer.ltv.toLocaleString()}, sentiment ${issue.customer.sentiment}/100${issue.customer.persona ? ', persona: ' + issue.customer.persona : ''}
+${issue.sourcePlaybook ? 'Playbook mandated by the data source (follow it): ' + issue.playbook.join('; ') : 'No playbook supplied — design one.'}
+
+Return exactly: {"triage":"1-2 sentence triage assessment","playbook":["3 concrete action steps"],"execution":"1-2 sentence summary of executing the playbook","resolution":"1 sentence final resolution to report to the customer record"}`}]});
+      const ai = JSON.parse(reply.replace(/^```(?:json)?\s*|\s*```$/g,'').trim());
+      issue.ai = ai;
+      if(Array.isArray(ai.playbook) && ai.playbook.length && !issue.sourcePlaybook) issue.playbook = ai.playbook;
+      if(ai.resolution && !issue.sourceResolution) issue.resolution = ai.resolution;
+      log('action', `${issue.id} — ${agent.name} completed live analysis & playbook selection`, issue);
+    } catch(e){
+      if(e.message === 'No API key provided.') aiDown = true;
+      log('governance', `${issue.id} — live agent run unavailable (${e.message}) — falling back to data-source playbook`, issue);
+    }
+    emit('change');
+  }
+  scheduleAdvance(issue);
 }
 
 // ── Issue lifecycle ──────────────────────────────────────────────────────
@@ -122,9 +168,11 @@ function scheduleAdvance(issue){
 }
 
 const STAGE_NOTES = {
-  1: i => `Triaged by ${i.agent} agent — severity ${i.severity}, risk ${i.risk}. Customer context loaded from digital twin (${i.customer.segment}, sentiment ${i.customer.sentiment}).`,
-  2: i => `Decision engine selected playbook: ${i.playbook[0]}.`,
-  3: i => `Executing: ${i.playbook.slice(1).join(' → ') || i.playbook[0]}.`
+  1: i => i.ai?.triage
+       || `Triaged by ${agentById(i.agent).name} — severity ${i.severity}, risk ${i.risk}. Customer context loaded from digital twin (${i.customer.segment}, sentiment ${i.customer.sentiment}).`,
+  2: i => `${agentById(i.agent).name} selected playbook: ${i.playbook[0]}.`,
+  3: i => i.ai?.execution
+       || `Executing: ${i.playbook.slice(1).join(' → ') || i.playbook[0]}.`
 };
 
 function advance(issue){
@@ -200,6 +248,31 @@ function updateKpis(issue){
 
 export function openIssues(){ return state.issues.filter(i=>i.stage<4); }
 export function approvalQueue(){ return state.issues.filter(i=>i.needsApproval); }
+
+// ── Fleet edits ──────────────────────────────────────────────────────────
+
+// Called by the Control Tower after the fleet is edited so all views refresh
+// and the audit trail records the change.
+export function agentsChanged(text){
+  log('governance', text);
+  emit('change');
+}
+
+// Re-assigns a removed agent's open issues (and load count) to the fleet's
+// first remaining agent.
+export function agentRemoved(oldId){
+  const fallback = getAgents()[0].id;
+  let moved = 0;
+  state.issues.forEach(i => {
+    if(i.agent === oldId && i.stage < 4){ i.agent = fallback; moved++; }
+  });
+  if(state.agentLoads[oldId]){
+    state.agentLoads[fallback] = (state.agentLoads[fallback]||0) + state.agentLoads[oldId];
+  }
+  delete state.agentLoads[oldId];
+  log('governance', `Agent removed from fleet${moved ? ` — ${moved} open issue${moved>1?'s':''} re-assigned to ${agentById(fallback).name}` : ''}`);
+  emit('change');
+}
 
 // ── Data source sync loop ────────────────────────────────────────────────
 

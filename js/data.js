@@ -10,14 +10,6 @@ export const CHANNELS = [
   {id:'partner', name:'Partner Portal', icon:'🤝'}
 ];
 
-export const AGENTS = [
-  {id:'service',   name:'Service Agent',   scope:'Issue resolution & support',     color:'#6C7FFF'},
-  {id:'sales',     name:'Sales Agent',     scope:'Conversion & retention offers',  color:'#4FFFB0'},
-  {id:'care',      name:'Care Agent',      scope:'Sentiment & proactive outreach', color:'#FFD97D'},
-  {id:'ops',       name:'Ops Agent',       scope:'Fulfilment & system actions',    color:'#FF6B6B'},
-  {id:'marketing', name:'Marketing Agent', scope:'Personalization & campaigns',    color:'#A78BFA'}
-];
-
 export const STAGES = ['Detected','Triaged','Deciding','Acting','Resolved'];
 
 export const GUARDRAILS = [
