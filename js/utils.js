@@ -12,3 +12,17 @@ export function toast(msg, dur=3000){
   el.textContent = msg; el.classList.add('show');
   setTimeout(()=>el.classList.remove('show'), dur);
 }
+
+// ── Display formatters ─────────────────────────────────────────────────────
+// Single source of truth for how money and timestamps render across views, so
+// formatting stays consistent and null/NaN inputs never reach the DOM.
+
+export function fmtMoney(n){
+  return '$' + (Number(n) || 0).toLocaleString();
+}
+
+const HH_MM     = {hour:'2-digit', minute:'2-digit'};
+const HH_MM_SS  = {hour:'2-digit', minute:'2-digit', second:'2-digit'};
+
+export const fmtTime    = d => d.toLocaleTimeString([], HH_MM);
+export const fmtTimeSec = d => d.toLocaleTimeString([], HH_MM_SS);
