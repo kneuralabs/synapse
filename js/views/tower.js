@@ -1,18 +1,17 @@
 import {state, on, setAutonomy, setRunning, openIssues, approvalQueue, predictedCsat, agentsChanged, agentRemoved} from '../engine.js';
 import {CHANNELS} from '../data.js';
 import {getAgents, addAgent, updateAgent, removeAgent} from '../agents.js';
-import {esc, toast} from '../utils.js';
-
-function fmtMoney(n){ return '$' + n.toLocaleString(); }
+import {esc, toast, fmtMoney, fmtTime} from '../utils.js';
 
 function renderKpis(){
   const k = state.kpis;
+  const csat = predictedCsat();
   document.getElementById('tower-kpis').innerHTML = `
     <div class="kpi"><div class="kpi-val">${openIssues().length}</div><div class="kpi-lbl">Problems in flight</div></div>
     <div class="kpi"><div class="kpi-val">${k.resolvedToday} <span class="up">↑</span></div><div class="kpi-lbl">Auto-resolved today</div></div>
     <div class="kpi"><div class="kpi-val">${k.autoRate}%</div><div class="kpi-lbl">Fully autonomous rate</div></div>
     <div class="kpi"><div class="kpi-val">${fmtMoney(k.valueRecovered)} <span class="up">↑</span></div><div class="kpi-lbl">Value recovered</div></div>
-    <div class="kpi"><div class="kpi-val">${predictedCsat() ?? '—'}${predictedCsat()!=null?'%':''}</div><div class="kpi-lbl">Predicted CSAT</div></div>`;
+    <div class="kpi"><div class="kpi-val">${csat ?? '—'}${csat!=null?'%':''}</div><div class="kpi-lbl">Predicted CSAT</div></div>`;
 }
 
 let editingId = null; // agent id being edited, '__new__' for the add form, or null
@@ -83,13 +82,17 @@ function renderFeed(){
     <div class="activity-item">
       <div class="act-dot ${a.kind}"></div>
       <div class="act-body">${esc(a.text)}</div>
-      <div class="act-time">${a.time.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+      <div class="act-time">${fmtTime(a.time)}</div>
     </div>`).join('') || '<div class="empty-hint">Waiting for signals…</div>';
 }
 
 function renderChannels(){
+  // Tally open issues per channel in a single pass instead of re-scanning the
+  // full issue list once per channel.
+  const counts = {};
+  for(const i of openIssues()) counts[i.channel] = (counts[i.channel]||0) + 1;
   document.getElementById('channel-grid').innerHTML = CHANNELS.map(c=>{
-    const open = openIssues().filter(i=>i.channel===c.id).length;
+    const open = counts[c.id] || 0;
     return `<div class="channel-card ${open?'hot':''}">
       <div class="channel-icon">${c.icon}</div>
       <div class="channel-name">${c.name}</div>

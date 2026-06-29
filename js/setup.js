@@ -1,4 +1,4 @@
-import {esc} from './utils.js';
+import {esc, fmtMoney} from './utils.js';
 
 const KEY_DONE  = 'snps_setup_done';
 const KEY_ORG   = 'snps_org';
@@ -144,7 +144,7 @@ function renderCustList() {
     <div class="setup-cust-chip">
       <span class="setup-cust-name">${esc(c.name)}</span>
       <span class="setup-cust-seg">${esc(c.segment)}</span>
-      <span class="setup-cust-ltv">$${c.ltv.toLocaleString()} LTV</span>
+      <span class="setup-cust-ltv">${fmtMoney(c.ltv)} LTV</span>
       <button class="setup-cust-del" data-i="${i}" title="Remove">✕</button>
     </div>`).join('');
   el.querySelectorAll('.setup-cust-del').forEach(btn => {

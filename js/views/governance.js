@@ -1,6 +1,6 @@
 import {GUARDRAILS} from '../data.js';
 import {state, on} from '../engine.js';
-import {esc} from '../utils.js';
+import {esc, fmtTimeSec} from '../utils.js';
 
 const KIND_LABEL = {detect:'DETECT', action:'ACTION', resolve:'RESOLVE', approval:'HITL', governance:'POLICY'};
 
@@ -21,7 +21,7 @@ function renderAudit(){
     <div class="activity-item">
       <span class="audit-kind k-${a.kind}">${KIND_LABEL[a.kind]||a.kind}</span>
       <div class="act-body">${esc(a.text)}</div>
-      <div class="act-time">${a.time.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
+      <div class="act-time">${fmtTimeSec(a.time)}</div>
     </div>`).join('') || '<div class="empty-hint">No events yet.</div>';
 }
 

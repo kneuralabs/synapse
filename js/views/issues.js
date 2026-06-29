@@ -1,6 +1,6 @@
 import {state, on, approve, reject} from '../engine.js';
 import {STAGES, CHANNELS} from '../data.js';
-import {esc, mdLite, toast} from '../utils.js';
+import {esc, mdLite, toast, fmtMoney, fmtTimeSec} from '../utils.js';
 import {callClaude} from '../api.js';
 
 let filter = 'all';
@@ -39,15 +39,20 @@ function renderList(){
     </div>`).join('') || '<div class="empty-hint">No issues yet. Issues stream in live from your data source — connect one in setup if you haven\'t.</div>';
 }
 
-function renderDetail(){
+// `preserveDeepDive` keeps any existing AI deep-dive result (or its in-flight
+// spinner) in place across the frequent engine 'change' re-renders. It's reset
+// only when the operator selects a different issue.
+function renderDetail(preserveDeepDive){
   const el = document.getElementById('issue-detail');
   const i = state.issues.find(x=>x.id===selectedId);
   if(!i){ el.innerHTML = '<div class="empty-hint">Select an issue to see the autonomous resolution timeline.</div>'; return; }
+  const deepDiveHtml = preserveDeepDive
+    ? (document.getElementById('deepdive-out')?.innerHTML || '') : '';
   el.innerHTML = `
     <div class="detail-head">
       <div>
         <div class="detail-title">${channelIcon(i.channel)} ${esc(i.type)} <span class="sev sev-${i.severity}">${i.severity}</span></div>
-        <div class="issue-meta">${i.id} · ${esc(i.customer.name)} (${i.customer.id}) · LTV $${i.customer.ltv.toLocaleString()} · risk: ${i.risk}</div>
+        <div class="issue-meta">${i.id} · ${esc(i.customer.name)} (${i.customer.id}) · LTV ${fmtMoney(i.customer.ltv)} · risk: ${i.risk}</div>
       </div>
     </div>
     <p class="detail-desc">${esc(i.detail)}</p>
@@ -58,7 +63,7 @@ function renderDetail(){
       <div class="tl-item">
         <div class="tl-stage">${esc(s.stage)}</div>
         <div class="tl-note">${esc(s.note)}</div>
-        <div class="tl-time">${s.time.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
+        <div class="tl-time">${fmtTimeSec(s.time)}</div>
       </div>`).join('')}</div>
     ${i.needsApproval ? `
       <div class="approve-row">
@@ -68,20 +73,25 @@ function renderDetail(){
     <div class="approve-row">
       <button class="btn btn-o" data-act="deepdive">✦ AI deep-dive</button>
     </div>
-    <div class="ai-prose" id="deepdive-out"></div>`;
+    <div class="ai-prose" id="deepdive-out">${deepDiveHtml}</div>`;
 }
 
 async function deepDive(issue){
-  const out = document.getElementById('deepdive-out');
-  out.innerHTML = '<div class="loading-row"><div class="spinner"></div> Analyzing root cause & prevention…</div>';
+  // Re-fetch the output node on each write: a concurrent engine re-render may
+  // have replaced it, and the operator may have switched to another issue.
+  const setOut = html => {
+    const out = document.getElementById('deepdive-out');
+    if(out && selectedId === issue.id) out.innerHTML = html;
+  };
+  setOut('<div class="loading-row"><div class="spinner"></div> Analyzing root cause & prevention…</div>');
   try {
     const reply = await callClaude({max_tokens:600,
       system:'You are the analysis engine of an autonomous customer-experience platform. Be concise and concrete. Use **bold** for headers only; no other markdown.',
       messages:[{role:'user', content:
         `Issue: ${issue.type} (${issue.severity} severity, ${issue.channel} channel)\nDetail: ${issue.detail}\nCustomer: ${issue.customer.segment} segment, sentiment ${issue.customer.sentiment}/100, persona: ${issue.customer.persona}\nPlaybook executed: ${issue.playbook.join('; ')}\n\nGive: **Root cause hypothesis**, **Prevention recommendation**, **Customer follow-up** (one short message we could send). Max 150 words.`}]});
-    out.innerHTML = mdLite(reply);
+    setOut(mdLite(reply));
   } catch(e){
-    out.innerHTML = `<span style="color:var(--accent)">${esc(e.message)}</span>`;
+    setOut(`<span style="color:var(--accent)">${esc(e.message)}</span>`);
   }
 }
 
@@ -104,6 +114,6 @@ export function initIssues(){
     if(btn.dataset.act==='reject'){ reject(i); toast('Action rejected — issue routed to manual handling.'); }
     if(btn.dataset.act==='deepdive') deepDive(i);
   });
-  on('change', ()=>{ renderList(); renderDetail(); });
+  on('change', ()=>{ renderList(); renderDetail(true); });
   renderList();
 }

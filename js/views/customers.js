@@ -1,6 +1,6 @@
 import {allCustomers} from '../datasource.js';
 import {state, on} from '../engine.js';
-import {esc} from '../utils.js';
+import {esc, fmtMoney, fmtTime} from '../utils.js';
 
 let selectedId = null;
 
@@ -14,7 +14,7 @@ function renderGrid(){
         <div class="proj-name">${esc(c.name)}</div>
         <span class="ws-pill">${esc(c.segment)}</span>
       </div>
-      <div class="proj-client">${c.id} · ${esc(c.tenure)} · LTV $${c.ltv.toLocaleString()}</div>
+      <div class="proj-client">${c.id} · ${esc(c.tenure)} · LTV ${fmtMoney(c.ltv)}</div>
       <div class="prog-row" style="margin-top:14px"><span>Sentiment</span><span>${c.sentiment}%</span></div>
       <div class="prog-bar"><div class="prog-fill sent-${sentClass(c.sentiment)}" style="width:${c.sentiment}%"></div></div>
       <div class="proj-ws">
@@ -40,7 +40,7 @@ function renderDetail(){
       <div class="tl-item">
         <div class="tl-stage">${esc(i.type)}</div>
         <div class="tl-note">${i.stage===4 ? esc(i.resolution) : 'Resolution in progress — '+(i.needsApproval?'awaiting approval':'agents acting')}</div>
-        <div class="tl-time">${i.createdAt.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="tl-time">${fmtTime(i.createdAt)}</div>
       </div>`).join('')}</div>`
     : '<div class="empty-hint">No issues detected for this customer yet — the agents are watching.</div>'}`;
 }
