@@ -1,0 +1,10 @@
+{
+  "name": "synapse",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Synapse — Autonomous Experience Orchestration Platform (static, buildless SPA).",
+  "scripts": {
+    "test": "node --test"
+  }
+}

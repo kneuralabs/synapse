@@ -1,6 +1,6 @@
 import {state, approve, reject} from '../engine.js';
 import {STAGES, CHANNELS} from '../data.js';
-import {esc, mdLite, toast, fmtMoney, fmtTimeSec} from '../utils.js';
+import {esc, mdLite, errorHtml, toast, fmtMoney, fmtTimeSec} from '../utils.js';
 import {callClaude} from '../api.js';
 import {liveView} from '../live.js';
 
@@ -92,7 +92,7 @@ async function deepDive(issue){
         `Issue: ${issue.type} (${issue.severity} severity, ${issue.channel} channel)\nDetail: ${issue.detail}\nCustomer: ${issue.customer.segment} segment, sentiment ${issue.customer.sentiment}/100, persona: ${issue.customer.persona}\nPlaybook executed: ${issue.playbook.join('; ')}\n\nGive: **Root cause hypothesis**, **Prevention recommendation**, **Customer follow-up** (one short message we could send). Max 150 words.`}]});
     setOut(mdLite(reply));
   } catch(e){
-    setOut(`<span style="color:var(--accent)">${esc(e.message)}</span>`);
+    setOut(errorHtml(e.message));
   }
 }
 
