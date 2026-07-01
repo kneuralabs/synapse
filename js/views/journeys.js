@@ -1,6 +1,7 @@
 import {getJourneys} from '../datasource.js';
-import {state, on} from '../engine.js';
+import {state} from '../engine.js';
 import {esc} from '../utils.js';
+import {liveView} from '../live.js';
 
 function render(){
   const journeys = getJourneys();
@@ -24,6 +25,5 @@ function render(){
 }
 
 export function initJourneys(){
-  on('change', render);
-  render();
+  liveView('journeys', render);
 }

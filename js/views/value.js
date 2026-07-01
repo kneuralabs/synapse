@@ -1,6 +1,7 @@
 import {getAgents} from '../agents.js';
-import {state, on, predictedCsat} from '../engine.js';
+import {state, predictedCsat} from '../engine.js';
 import {esc, fmtMoney} from '../utils.js';
+import {liveView} from '../live.js';
 
 function render(){
   const k = state.kpis;
@@ -32,6 +33,5 @@ function render(){
 }
 
 export function initValue(){
-  on('change', render);
-  render();
+  liveView('value', render);
 }

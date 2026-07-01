@@ -1,7 +1,8 @@
-import {state, on, approve, reject} from '../engine.js';
+import {state, approve, reject} from '../engine.js';
 import {STAGES, CHANNELS} from '../data.js';
 import {esc, mdLite, toast, fmtMoney, fmtTimeSec} from '../utils.js';
 import {callClaude} from '../api.js';
+import {liveView} from '../live.js';
 
 let filter = 'all';
 let selectedId = null;
@@ -114,6 +115,5 @@ export function initIssues(){
     if(btn.dataset.act==='reject'){ reject(i); toast('Action rejected — issue routed to manual handling.'); }
     if(btn.dataset.act==='deepdive') deepDive(i);
   });
-  on('change', ()=>{ renderList(); renderDetail(true); });
-  renderList();
+  liveView('issues', ()=>{ renderList(); renderDetail(true); });
 }

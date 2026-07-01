@@ -1,7 +1,8 @@
 import {state, on, setAutonomy, setRunning, openIssues, approvalQueue, predictedCsat, agentsChanged, agentRemoved} from '../engine.js';
 import {CHANNELS} from '../data.js';
 import {getAgents, addAgent, updateAgent, removeAgent} from '../agents.js';
-import {esc, toast, fmtMoney, fmtTime} from '../utils.js';
+import {esc, toast, fmtMoney, fmtTime, shake} from '../utils.js';
+import {liveView} from '../live.js';
 
 function renderKpis(){
   const k = state.kpis;
@@ -67,7 +68,7 @@ function onFleetClick(e){
   if(act === 'save'){
     const form = btn.closest('.fleet-form');
     const name = form.querySelector('.af-name').value.trim();
-    if(!name){ form.querySelector('.af-name').classList.add('shake'); setTimeout(()=>form.querySelector('.af-name').classList.remove('shake'),350); return; }
+    if(!name){ shake(form.querySelector('.af-name')); return; }
     const patch = {name, scope: form.querySelector('.af-scope').value.trim(), color: form.querySelector('.af-color').value};
     if(editingId === '__new__') addAgent(patch);
     else updateAgent(editingId, patch);
@@ -119,8 +120,15 @@ function renderEnginePill(){
   document.getElementById('engine-dot').classList.toggle('paused', !state.running);
 }
 
-function renderAll(){
-  renderKpis(); renderFleet(); renderChannels(); renderBadges(); renderAutonomy(); renderEnginePill();
+// View-local panels (inside #v-tower) — only worth rendering when on screen.
+function renderView(){
+  renderKpis(); renderFleet(); renderChannels(); renderAutonomy();
+}
+
+// Global chrome that lives outside the tower view (sidebar badges, topbar
+// engine pill) — must stay current no matter which view is active.
+function renderChrome(){
+  renderBadges(); renderEnginePill();
 }
 
 export function initTower(){
@@ -130,7 +138,8 @@ export function initTower(){
   });
   document.getElementById('engine-pill').addEventListener('click', ()=>setRunning(!state.running));
   document.getElementById('agent-fleet').addEventListener('click', onFleetClick);
-  on('change', renderAll);
-  on('audit', renderFeed);
-  renderAll(); renderFeed();
+  on('change', renderChrome);        // always-visible chrome
+  liveView('tower', renderView);     // tower panels — only while tower is active
+  liveView('tower', renderFeed, 'audit');
+  renderChrome();
 }

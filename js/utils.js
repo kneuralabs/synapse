@@ -13,6 +13,16 @@ export function toast(msg, dur=3000){
   setTimeout(()=>el.classList.remove('show'), dur);
 }
 
+// Briefly shake an element to flag an invalid/empty field. Accepts an element
+// or an element id. Duration matches the `.shake` CSS animation (350ms).
+const SHAKE_MS = 350;
+export function shake(target){
+  const el = typeof target === 'string' ? document.getElementById(target) : target;
+  if(!el) return;
+  el.classList.add('shake');
+  setTimeout(()=>el.classList.remove('shake'), SHAKE_MS);
+}
+
 // ── Display formatters ─────────────────────────────────────────────────────
 // Single source of truth for how money and timestamps render across views, so
 // formatting stays consistent and null/NaN inputs never reach the DOM.
