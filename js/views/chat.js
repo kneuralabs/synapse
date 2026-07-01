@@ -1,5 +1,5 @@
 import {callClaude} from '../api.js';
-import {esc, mdLite} from '../utils.js';
+import {esc, mdLite, errorHtml} from '../utils.js';
 import {state, openIssues, approvalQueue, predictedCsat} from '../engine.js';
 import {getAgents} from '../agents.js';
 
@@ -46,7 +46,7 @@ async function sendChat(){
     thinkingEl.querySelector('.msg-bubble').innerHTML = mdLite(reply);
   } catch(e) {
     chatHistory.pop(); // drop the unanswered user turn so a retry resends cleanly
-    thinkingEl.querySelector('.msg-bubble').innerHTML = `<span style="color:var(--accent)">${esc(e.message)}</span>`;
+    thinkingEl.querySelector('.msg-bubble').innerHTML = errorHtml(e.message);
   } finally {
     chatBusy = false;
   }

@@ -1,5 +1,11 @@
 import {API_PROXY, MODEL} from './config.js';
 import {getApiProxy} from './setup.js';
+import {fetchWithTimeout} from './net.js';
+
+// AI generations run longer than a plain JSON fetch, so they get a roomier
+// ceiling than net.js's default — still bounded so a hung request can't leave
+// the chat/deep-dive spinner running (and chat latched busy) forever.
+const AI_TIMEOUT_MS = 30000;
 
 function getApiKey(){
   let key = localStorage.getItem('anthropic_api_key');
@@ -25,9 +31,11 @@ export async function callClaude(body){
   }
   let res;
   try {
-    res = await fetch(url, {method:'POST', headers, body:JSON.stringify({model:MODEL, ...body})});
+    res = await fetchWithTimeout(url, {method:'POST', headers, body:JSON.stringify({model:MODEL, ...body})}, AI_TIMEOUT_MS);
   } catch(e) {
-    throw new Error('Network error — could not reach the AI service.');
+    throw new Error(e.name === 'AbortError'
+      ? 'The AI service timed out — please try again.'
+      : 'Network error — could not reach the AI service.');
   }
   const data = await res.json().catch(()=>null);
   if(!res.ok){

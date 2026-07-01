@@ -15,6 +15,7 @@
 // Journey record:  { name, stages?, health?, nba? }
 
 import {getDataUrl, getCustomers} from './setup.js';
+import {fetchWithTimeout} from './net.js';
 
 let _journeys = [];
 let _remoteCustomers = [];
@@ -57,9 +58,11 @@ export async function fetchSourceData(){
   if(!url) return [];
   let res;
   try {
-    res = await fetch(url, {headers:{'Accept':'application/json'}});
-  } catch {
-    throw new Error('Network error — could not reach the data source.');
+    res = await fetchWithTimeout(url, {headers:{'Accept':'application/json'}});
+  } catch(e) {
+    throw new Error(e.name === 'AbortError'
+      ? 'Data source timed out — no response in time.'
+      : 'Network error — could not reach the data source.');
   }
   if(!res.ok) throw new Error(`Data source returned HTTP ${res.status}`);
   const data = await res.json().catch(()=>{ throw new Error('Data source did not return valid JSON.'); });

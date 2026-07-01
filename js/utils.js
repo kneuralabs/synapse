@@ -7,6 +7,12 @@ export function mdLite(text){
   return esc(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
 }
 
+// Inline error text for a failed async action (chat reply, AI deep-dive).
+// Single source of truth so every surface renders — and escapes — errors alike.
+export function errorHtml(msg){
+  return `<span style="color:var(--accent)">${esc(msg)}</span>`;
+}
+
 export function toast(msg, dur=3000){
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
