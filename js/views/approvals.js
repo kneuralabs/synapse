@@ -1,5 +1,6 @@
-import {on, approvalQueue, approve, reject} from '../engine.js';
+import {approvalQueue, approve, reject} from '../engine.js';
 import {esc, toast, fmtMoney} from '../utils.js';
+import {liveView} from '../live.js';
 
 function render(){
   const items = approvalQueue();
@@ -27,6 +28,5 @@ export function initApprovals(){
     if(btn.dataset.act==='approve'){ approve(issue); toast(`${issue.id} approved — agent executing.`); }
     else { reject(issue); toast(`${issue.id} rejected — routed to manual handling.`); }
   });
-  on('change', render);
-  render();
+  liveView('approvals', render);
 }

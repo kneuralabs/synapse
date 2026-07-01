@@ -1,4 +1,4 @@
-import {esc, fmtMoney} from './utils.js';
+import {esc, fmtMoney, shake} from './utils.js';
 
 const KEY_DONE  = 'snps_setup_done';
 const KEY_ORG   = 'snps_org';
@@ -172,11 +172,4 @@ function bindStep3() {
     document.getElementById('setup-overlay').classList.remove('active');
     if (_onDone) _onDone();
   };
-}
-
-function shake(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.add('shake');
-  setTimeout(() => el.classList.remove('shake'), 350);
 }

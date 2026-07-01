@@ -1,6 +1,7 @@
 import {GUARDRAILS} from '../data.js';
-import {state, on} from '../engine.js';
+import {state} from '../engine.js';
 import {esc, fmtTimeSec} from '../utils.js';
+import {liveView} from '../live.js';
 
 const KIND_LABEL = {detect:'DETECT', action:'ACTION', resolve:'RESOLVE', approval:'HITL', governance:'POLICY'};
 
@@ -26,7 +27,6 @@ function renderAudit(){
 }
 
 export function initGovernance(){
-  on('audit', renderAudit);
-  renderGuardrails();
-  renderAudit();
+  renderGuardrails(); // guardrails are static — render once
+  liveView('governance', renderAudit, 'audit');
 }

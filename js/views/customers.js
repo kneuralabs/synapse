@@ -1,6 +1,7 @@
 import {allCustomers} from '../datasource.js';
-import {state, on} from '../engine.js';
+import {state} from '../engine.js';
 import {esc, fmtMoney, fmtTime} from '../utils.js';
+import {liveView} from '../live.js';
 
 let selectedId = null;
 
@@ -51,6 +52,5 @@ export function initCustomers(){
     selectedId = card.dataset.id === selectedId ? null : card.dataset.id;
     renderGrid(); renderDetail();
   });
-  on('change', ()=>{ renderGrid(); renderDetail(); });
-  renderGrid();
+  liveView('customers', ()=>{ renderGrid(); renderDetail(); });
 }
