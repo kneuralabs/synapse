@@ -25,7 +25,7 @@ function scannerForm(s = {}){
     <input class="setup-input sf-name" placeholder="Scanner name" value="${esc(s.name||'')}" maxlength="40">
     <input class="setup-input sf-scope" placeholder="Scope / what it detects" value="${esc(s.scope||'')}" maxlength="80">
     <div class="fleet-form-row">
-      <input class="fleet-color sf-color" type="color" value="${s.color||'#6C7FFF'}" title="Scanner color">
+      <input class="fleet-color sf-color" type="color" value="${esc(s.color||'#6C7FFF')}" title="Scanner color">
       <div class="fleet-form-actions">
         <button class="btn btn-p" data-fleet="save">Save</button>
         <button class="btn btn-o" data-fleet="cancel">Cancel</button>
@@ -100,7 +100,7 @@ function renderSources(){
     return `<div class="channel-card ${open?'hot':''}">
       <div class="channel-icon">${sourceIcon(s.type)}</div>
       <div class="channel-name">${esc(s.name)}</div>
-      <div class="channel-state">${open ? open+' asset'+(open>1?'s':'')+' scanning' : s.health+'% governed'}</div>
+      <div class="channel-state">${open ? open+' asset'+(open>1?'s':'')+' scanning' : esc(s.health)+'% governed'}</div>
     </div>`;
   }).join('') || '<div class="empty-hint">No sources yet. Register them in setup or include a <code>sources</code> array in your data feed.</div>';
 }

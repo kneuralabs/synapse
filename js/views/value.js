@@ -71,7 +71,7 @@ function render(){
     <div class="ws-row">
       <span class="ws-dot" style="background:${esc(s.color)}"></span>
       <span class="ws-name">${esc(s.name)}</span>
-      <div class="ws-bar-wrap"><div class="ws-bar" style="width:${Math.round(v/max*100)}%;background:${s.color}"></div></div>
+      <div class="ws-bar-wrap"><div class="ws-bar" style="width:${Math.round(v/max*100)}%;background:${esc(s.color)}"></div></div>
       <span class="ws-pct" style="width:54px">${fmtMoney(v)}</span>
     </div>`).join('');
 }
