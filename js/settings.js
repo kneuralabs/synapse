@@ -23,7 +23,7 @@ function save(){
   setApiProxy(document.getElementById('set-api-url').value.trim());
   close();
   if(url !== prev) dataSourceChanged(); // starts/refreshes the sync immediately
-  toast(url ? 'Settings saved — data source syncing.' : 'Settings saved.');
+  toast(url ? 'Settings saved — data feed scanning.' : 'Settings saved.');
 }
 
 export function initSettings(){

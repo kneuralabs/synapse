@@ -1,56 +1,81 @@
-import {allCustomers} from '../datasource.js';
 import {state} from '../engine.js';
-import {esc, fmtMoney, fmtTime} from '../utils.js';
+import {STAGES} from '../data.js';
+import {assetIcon, sensPill, sensName, classChips} from '../labels.js';
+import {esc, fmtTimeSec} from '../utils.js';
 import {liveView} from '../live.js';
 
 let selectedId = null;
+let query = '';
 
-function sentClass(s){ return s>=70 ? 'good' : s>=55 ? 'mid' : 'bad'; }
+function matches(a){
+  if(!query) return true;
+  const hay = [a.name, a.path, a.source.name, a.source.domain, sensName(a.sensitivity),
+    a.exposure, ...(a.classifications||[]), ...(a.glossary||[])].join(' ').toLowerCase();
+  return hay.includes(query);
+}
+
+function statusLabel(a){
+  if(a.needsApproval) return '✋ Awaiting approval';
+  if(a.stage===4) return a.rejected ? 'Held by steward' : '✓ Governed';
+  return STAGES[a.stage]+'…';
+}
 
 function renderGrid(){
-  document.getElementById('customer-grid').innerHTML = allCustomers().map(c=>{
-    const open = state.issues.filter(i=>i.stage<4 && i.customer.id===c.id).length;
-    return `<div class="proj-card ${c.id===selectedId?'sel':''}" data-id="${c.id}">
+  const items = state.assets.filter(matches);
+  document.getElementById('catalog-grid').innerHTML = items.map(a=>`
+    <div class="proj-card ${a.id===selectedId?'sel':''}" data-id="${a.id}">
       <div class="proj-card-top">
-        <div class="proj-name">${esc(c.name)}</div>
-        <span class="ws-pill">${esc(c.segment)}</span>
+        <div class="proj-name">${assetIcon(a.assetType)} ${esc(a.name)}</div>
+        ${sensPill(a.sensitivity)}
       </div>
-      <div class="proj-client">${c.id} · ${esc(c.tenure)} · LTV ${fmtMoney(c.ltv)}</div>
-      <div class="prog-row" style="margin-top:14px"><span>Sentiment</span><span>${c.sentiment}%</span></div>
-      <div class="prog-bar"><div class="prog-fill sent-${sentClass(c.sentiment)}" style="width:${c.sentiment}%"></div></div>
+      <div class="proj-client">${a.id} · ${esc(a.source.name)} · ${esc(a.assetType)}</div>
+      ${classChips(a.classifications)}
       <div class="proj-ws">
-        <span class="ws-pill">${esc(c.journey)} journey</span>
-        ${open?`<span class="ws-pill pill-hot">${open} issue${open>1?'s':''} being resolved</span>`:''}
+        <span class="ws-pill ${a.exposure==='Over-shared'?'pill-hot':''}">${esc(a.exposure)}</span>
+        <span class="ws-pill">${esc(statusLabel(a))}</span>
       </div>
-    </div>`;
-  }).join('') || '<div class="empty-hint">No customers yet. Add them in setup or include a <code>customers</code> array in your data source response.</div>';
+    </div>`).join('') ||
+    (state.assets.length
+      ? '<div class="empty-hint">No assets match your search.</div>'
+      : '<div class="empty-hint">No assets catalogued yet. Connect a data feed in setup — discovered assets are classified and appear here.</div>');
 }
 
 function renderDetail(){
-  const el = document.getElementById('customer-detail');
-  const c = allCustomers().find(x=>x.id===selectedId);
-  if(!c){ el.style.display='none'; return; }
-  const history = state.issues.filter(i=>i.customer.id===c.id);
+  const el = document.getElementById('catalog-detail');
+  const a = state.assets.find(x=>x.id===selectedId);
+  if(!a){ el.style.display='none'; return; }
   el.style.display='block';
   el.innerHTML = `
-    <div class="detail-title">${esc(c.name)} — Digital Twin</div>
-    <div class="issue-meta">${c.id} · ${esc(c.segment)} · prefers ${esc(c.channelPref)} channel</div>
-    <p class="detail-desc">${esc(c.persona)}</p>
-    <div class="section-eyebrow">Issue history (this session)</div>
-    ${history.length ? `<div class="timeline">${history.map(i=>`
+    <div class="detail-title">${assetIcon(a.assetType)} ${esc(a.name)} ${sensPill(a.sensitivity)}</div>
+    <div class="issue-meta">${a.id} · ${esc(a.source.name)} · ${esc(a.path)}${a.rows?' · ~'+a.rows.toLocaleString()+' rows':''}</div>
+    <p class="detail-desc">${esc(a.resolution)}</p>
+    <div class="catalog-meta">
+      <div class="cm-item"><span class="cm-k">Type</span><span class="cm-v">${esc(a.assetType)}${a.format?' · '+esc(a.format):''}</span></div>
+      <div class="cm-item"><span class="cm-k">Domain</span><span class="cm-v">${esc(a.source.domain)}</span></div>
+      <div class="cm-item"><span class="cm-k">Owner</span><span class="cm-v">${esc(a.source.owner)}</span></div>
+      <div class="cm-item"><span class="cm-k">Exposure</span><span class="cm-v">${esc(a.exposure)}</span></div>
+    </div>
+    ${a.classifications.length ? `<div class="section-eyebrow">Sensitive information types</div>${classChips(a.classifications)}` : ''}
+    ${a.glossary.length ? `<div class="section-eyebrow">Glossary terms</div>
+      <div class="proj-ws">${a.glossary.map(g=>`<span class="ws-pill">${esc(g)}</span>`).join('')}</div>` : ''}
+    <div class="section-eyebrow">Governance history</div>
+    <div class="timeline">${a.stepLog.map(s=>`
       <div class="tl-item">
-        <div class="tl-stage">${esc(i.type)}</div>
-        <div class="tl-note">${i.stage===4 ? esc(i.resolution) : 'Resolution in progress — '+(i.needsApproval?'awaiting approval':'agents acting')}</div>
-        <div class="tl-time">${fmtTime(i.createdAt)}</div>
-      </div>`).join('')}</div>`
-    : '<div class="empty-hint">No issues detected for this customer yet — the agents are watching.</div>'}`;
+        <div class="tl-stage">${esc(s.stage)}</div>
+        <div class="tl-note">${esc(s.note)}</div>
+        <div class="tl-time">${fmtTimeSec(s.time)}</div>
+      </div>`).join('')}</div>`;
 }
 
-export function initCustomers(){
-  document.getElementById('customer-grid').addEventListener('click', e=>{
+export function initCatalog(){
+  document.getElementById('catalog-grid').addEventListener('click', e=>{
     const card = e.target.closest('.proj-card'); if(!card) return;
     selectedId = card.dataset.id === selectedId ? null : card.dataset.id;
     renderGrid(); renderDetail();
   });
-  liveView('customers', ()=>{ renderGrid(); renderDetail(); });
+  document.getElementById('catalog-search').addEventListener('input', e=>{
+    query = e.target.value.trim().toLowerCase();
+    renderGrid();
+  });
+  liveView('catalog', ()=>{ renderGrid(); renderDetail(); });
 }

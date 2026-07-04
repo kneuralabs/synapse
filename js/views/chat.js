@@ -1,27 +1,28 @@
 import {callClaude} from '../api.js';
 import {esc, mdLite, errorHtml} from '../utils.js';
-import {state, openIssues, approvalQueue, predictedCsat} from '../engine.js';
-import {getAgents} from '../agents.js';
+import {state, openAssets, approvalQueue, estateHealth} from '../engine.js';
+import {sensName} from '../labels.js';
+import {getScanners} from '../scanners.js';
 
 const chatHistory = [];
 let chatBusy = false;
 
 // Built fresh per message so the assistant always sees live platform state.
 function systemPrompt(){
-  const open = openIssues().map(i=>`${i.id} ${i.type} (${i.severity}, ${i.channel}) for ${i.customer.name} [${i.customer.segment}, sentiment ${i.customer.sentiment}]`).join('; ') || 'none';
-  const held = approvalQueue().map(i=>`${i.id} ${i.type} (risk ${i.risk})`).join('; ') || 'none';
-  const resolved = state.issues.filter(i=>i.stage===4).slice(0,8).map(i=>`${i.id} ${i.type} → ${i.resolution}`).join('; ') || 'none yet';
-  const fleet = getAgents().map(a=>`${a.name} (${a.scope})`).join(', ');
-  return `You are Synapse AI, the assistant inside the Synapse Autonomous Experience Orchestration Platform. The platform's AI agents — ${fleet} — automatically detect and resolve customer problems across web, mobile, email, social, contact center, in-store and partner channels, with human-in-the-loop approval for high-risk actions.
+  const open = openAssets().map(a=>`${a.id} ${a.name} (${a.assetType}, ${sensName(a.sensitivity)}, ${a.exposure}) in ${a.source.name}`).join('; ') || 'none';
+  const held = approvalQueue().map(a=>`${a.id} ${a.name} (risk ${a.risk}, ${sensName(a.sensitivity)})`).join('; ') || 'none';
+  const governed = state.assets.filter(a=>a.stage===4).slice(0,8).map(a=>`${a.id} ${a.name} → ${sensName(a.sensitivity)}`).join('; ') || 'none yet';
+  const fleet = getScanners().map(s=>`${s.name} (${s.scope})`).join(', ');
+  return `You are Synapse AI, the assistant inside the Synapse Unified Data Governance, Security & Compliance platform. The platform's autonomous scanners — ${fleet} — discover, classify, label and govern data assets across databases, data lakes, warehouses, SaaS apps, file shares, event streams and AI/Copilot surfaces, with steward approval for high-risk remediations.
 
 LIVE PLATFORM STATE
 - Autonomy mode: ${state.autonomy}
-- Issues in flight: ${open}
-- Awaiting human approval: ${held}
-- Resolved this session: ${state.kpis.resolvedToday} (auto rate ${state.kpis.autoRate}%, value recovered $${state.kpis.valueRecovered}, predicted CSAT ${predictedCsat() ?? 'n/a'}%)
-- Recent resolutions: ${resolved}
+- Assets in the pipeline: ${open}
+- Awaiting steward approval: ${held}
+- Governed this session: ${state.kpis.governedToday} (auto-classification rate ${state.kpis.autoRate}%, exposure remediated $${state.kpis.exposureProtected}, estate health ${estateHealth() ?? 'n/a'}%)
+- Recently governed: ${governed}
 
-Help the operator understand and act on this state: summarize operations, explain agent decisions, flag churn risks, draft customer communications, and advise on guardrail tuning. Be sharp, specific and concise. Use **bold** sparingly for emphasis; plain paragraphs otherwise.`;
+Help the steward understand and act on this state: summarize scans, explain classifications, flag over-shared or high-risk assets, assess exposure to regulations (GDPR, HIPAA, PCI-DSS, ISO 27001, SOC 2, NIST), draft DPIAs and policies, and advise on guardrail tuning. Be sharp, specific and concise. Use **bold** sparingly for emphasis; plain paragraphs otherwise.`;
 }
 
 export function preFillChat(text){
@@ -59,7 +60,7 @@ function appendMsg(role, html){
   const msgs = document.getElementById('chat-msgs');
   const el = document.createElement('div');
   el.className = `msg ${role}`;
-  el.innerHTML = `<div class="msg-av">${role==='ai'?'L':'K'}</div><div class="msg-bubble">${html}</div>`;
+  el.innerHTML = `<div class="msg-av">${role==='ai'?'S':'K'}</div><div class="msg-bubble">${html}</div>`;
   msgs.appendChild(el);
   msgs.scrollTop = msgs.scrollHeight;
   return el;

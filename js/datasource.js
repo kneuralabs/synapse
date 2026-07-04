@@ -1,58 +1,57 @@
-// Real-data integration. All customers, issues and journeys come from the
-// data source URL configured in setup (or from customers entered manually in
-// the wizard) — nothing is simulated or invented client-side.
+// Real-data integration. Every data source, asset and lineage flow the
+// platform governs comes from the data source URL configured in setup (or from
+// sources entered manually in the wizard) — nothing is simulated or invented
+// client-side.
 //
 // The endpoint must return JSON in one of two shapes:
-//   1. An object: { "customers": [...], "issues": [...], "journeys": [...] }
-//   2. A bare array of issue records.
+//   1. An object: { "sources": [...], "assets": [...], "flows": [...] }
+//   2. A bare array of asset records.
 //
-// Issue record:    { id?, type, detail, channel?, severity?, risk?, agent?,
-//                    playbook?, resolution?, value?, mins?, customer? }
-//                  `customer` may be a customer id, a name, or an inline
-//                  customer record.
-// Customer record: { id?, name, segment?, ltv?, tenure?, channelPref?,
-//                    journey?, sentiment?, persona? }
-// Journey record:  { name, stages?, health?, nba? }
+// Asset record:   { id?, name, assetType?, source?, path?, format?, rows?,
+//                   classifications?, sensitivity?, risk?, exposure?, glossary?,
+//                   playbook?, resolution?, value?, mins?, scanner? }
+//                  `source` may be a source id, a name, or an inline source
+//                  record.
+// Source record:  { id?, name, type?, domain?, owner?, health?, description? }
+// Flow record:    { name, stages?, health?, nba? }
 
-import {getDataUrl, getCustomers} from './setup.js';
+import {getDataUrl, getSources} from './setup.js';
 import {fetchWithTimeout} from './net.js';
 
-let _journeys = [];
-let _remoteCustomers = [];
-let _custSeq = 1;
+let _flows = [];
+let _remoteSources = [];
+let _srcSeq = 1;
 
-export const getJourneys = () => _journeys;
+export const getFlows = () => _flows;
 
-// Customers entered in the setup wizard plus customers from the data source.
-export function allCustomers(){
-  const local = getCustomers();
-  const ids = new Set(local.map(c => c.id));
-  return local.concat(_remoteCustomers.filter(c => !ids.has(c.id)));
+// Sources entered in the setup wizard plus sources from the data source.
+export function allSources(){
+  const local = getSources();
+  const ids = new Set(local.map(s => s.id));
+  return local.concat(_remoteSources.filter(s => !ids.has(s.id)));
 }
 
-// Adds a customer discovered inline on an issue record so Customer 360 and
-// CSAT see them too.
-export function registerCustomer(c){
-  if(!_remoteCustomers.some(x => x.id === c.id)) _remoteCustomers.push(c);
-  return c;
+// Adds a source discovered inline on an asset record so the Data Map and
+// estate-health metric see it too.
+export function registerSource(s){
+  if(!_remoteSources.some(x => x.id === s.id)) _remoteSources.push(s);
+  return s;
 }
 
-export function normalizeCustomer(c){
+export function normalizeSource(s){
   return {
-    id:          String(c.id ?? 'C-R' + _custSeq++),
-    name:        c.name || 'Unknown customer',
-    segment:     c.segment || 'Standard',
-    ltv:         Number(c.ltv) || 0,
-    tenure:      c.tenure || '—',
-    channelPref: c.channelPref || 'web',
-    journey:     c.journey || 'Support',
-    sentiment:   Math.min(100, Math.max(0, Number(c.sentiment) || 70)),
-    persona:     c.persona || ''
+    id:          String(s.id ?? 'SRC-R' + _srcSeq++),
+    name:        s.name || 'Unknown source',
+    type:        s.type || 'sql',
+    domain:      s.domain || 'Unclassified',
+    owner:       s.owner || 'Unassigned',
+    health:      Math.min(100, Math.max(0, Number(s.health) || 60)),
+    description: s.description || ''
   };
 }
 
-// Fetches the configured data source and returns its issue records.
-// Customers and journeys found in the payload are cached for the getters above.
+// Fetches the configured data source and returns its asset records. Sources and
+// flows found in the payload are cached for the getters above.
 export async function fetchSourceData(){
   const url = getDataUrl();
   if(!url) return [];
@@ -67,13 +66,13 @@ export async function fetchSourceData(){
   if(!res.ok) throw new Error(`Data source returned HTTP ${res.status}`);
   const data = await res.json().catch(()=>{ throw new Error('Data source did not return valid JSON.'); });
   if(Array.isArray(data)) return data;
-  if(Array.isArray(data.customers)){
-    // The payload is authoritative, but keep customers registered inline from
-    // issue records that the customers array doesn't (or no longer) lists.
-    const fetched = data.customers.map(normalizeCustomer);
-    const ids = new Set(fetched.map(c => c.id));
-    _remoteCustomers = fetched.concat(_remoteCustomers.filter(c => !ids.has(c.id)));
+  if(Array.isArray(data.sources)){
+    // The payload is authoritative, but keep sources registered inline from
+    // asset records that the sources array doesn't (or no longer) lists.
+    const fetched = data.sources.map(normalizeSource);
+    const ids = new Set(fetched.map(s => s.id));
+    _remoteSources = fetched.concat(_remoteSources.filter(s => !ids.has(s.id)));
   }
-  if(Array.isArray(data.journeys))  _journeys = data.journeys.filter(j => j && j.name);
-  return Array.isArray(data.issues) ? data.issues : [];
+  if(Array.isArray(data.flows)) _flows = data.flows.filter(f => f && f.name);
+  return Array.isArray(data.assets) ? data.assets : [];
 }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Synapse — Autonomous Experience Orchestration</title>
+<title>Synapse — Unified Data Governance, Security &amp; Compliance</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/main.css">
 </head>
@@ -66,7 +66,7 @@
     <div class="setup-step" id="setup-step-1">
       <div class="setup-eyebrow">Step 1 of 3</div>
       <div class="setup-title">Set up your organization</div>
-      <div class="setup-sub">Tell Synapse about your business so the orchestration engine can personalize its context.</div>
+      <div class="setup-sub">Tell Synapse about your organization so the governance engine can scope classifications and compliance to your data estate.</div>
       <div class="setup-fields">
         <div class="setup-field">
           <label class="setup-label">Organization name <span class="req">*</span></label>
@@ -76,19 +76,19 @@
           <label class="setup-label">Industry</label>
           <select class="setup-input" id="s1-industry">
             <option value="">Select your industry…</option>
-            <option>E-commerce / Retail</option>
-            <option>SaaS / Software</option>
             <option>Financial Services</option>
-            <option>Telecommunications</option>
-            <option>Healthcare</option>
-            <option>Travel &amp; Hospitality</option>
-            <option>Media &amp; Entertainment</option>
+            <option>Healthcare / Life Sciences</option>
+            <option>Government / Public Sector</option>
+            <option>SaaS / Software</option>
+            <option>Retail / E-commerce</option>
+            <option>Insurance</option>
+            <option>Energy / Utilities</option>
             <option>Other</option>
           </select>
         </div>
         <div class="setup-field">
           <label class="setup-label">Your name or role</label>
-          <input class="setup-input" id="s1-operator" type="text" placeholder="e.g. Sarah — Head of CX" autocomplete="name">
+          <input class="setup-input" id="s1-operator" type="text" placeholder="e.g. Priya — Data Protection Officer" autocomplete="name">
         </div>
       </div>
       <div class="setup-actions">
@@ -96,98 +96,78 @@
       </div>
     </div>
 
-    <!-- Step 2 — Customers -->
+    <!-- Step 2 — Data sources -->
     <div class="setup-step" id="setup-step-2">
       <div class="setup-eyebrow">Step 2 of 3</div>
-      <div class="setup-title">Add customers to monitor</div>
-      <div class="setup-sub">Add the customers you want the engine to monitor, or skip this step and let your data source supply them in step 3.</div>
+      <div class="setup-title">Register data sources to govern</div>
+      <div class="setup-sub">Add the systems that hold your data, or skip this step and let your data feed supply them in step 3.</div>
       <div class="setup-cust-form">
         <div class="setup-fields setup-fields-grid">
           <div class="setup-field">
-            <label class="setup-label">Full name <span class="req">*</span></label>
-            <input class="setup-input" id="s2-name" type="text" placeholder="e.g. Jane Smith">
+            <label class="setup-label">Source name <span class="req">*</span></label>
+            <input class="setup-input" id="s2-name" type="text" placeholder="e.g. Sales — Azure SQL">
           </div>
           <div class="setup-field">
-            <label class="setup-label">Segment</label>
-            <select class="setup-input" id="s2-segment">
-              <option>Standard</option>
-              <option>Growth</option>
-              <option>Premium</option>
-              <option>Enterprise</option>
+            <label class="setup-label">Source type</label>
+            <select class="setup-input" id="s2-type">
+              <option value="sql">Azure SQL / Database</option>
+              <option value="lake">Data Lake</option>
+              <option value="warehouse">Warehouse</option>
+              <option value="saas">SaaS App</option>
+              <option value="files">File Share</option>
+              <option value="stream">Event Stream</option>
+              <option value="ai">AI / Copilot</option>
             </select>
           </div>
           <div class="setup-field">
-            <label class="setup-label">Lifetime value ($)</label>
-            <input class="setup-input" id="s2-ltv" type="number" placeholder="e.g. 4500" min="0">
+            <label class="setup-label">Governance domain</label>
+            <input class="setup-input" id="s2-domain" type="text" placeholder="e.g. Sales, Finance, HR">
           </div>
           <div class="setup-field">
-            <label class="setup-label">Tenure</label>
-            <input class="setup-input" id="s2-tenure" type="text" placeholder="e.g. 2 yrs">
+            <label class="setup-label">Data owner</label>
+            <input class="setup-input" id="s2-owner" type="text" placeholder="e.g. Sarah Chen">
           </div>
           <div class="setup-field">
-            <label class="setup-label">Preferred channel</label>
-            <select class="setup-input" id="s2-channel">
-              <option value="web">Web</option>
-              <option value="mobile">Mobile</option>
-              <option value="email">Email</option>
-              <option value="social">Social</option>
-              <option value="contact">Contact Center</option>
-              <option value="store">In-store / IoT</option>
-              <option value="partner">Partner Portal</option>
-            </select>
-          </div>
-          <div class="setup-field">
-            <label class="setup-label">Current journey</label>
-            <select class="setup-input" id="s2-journey">
-              <option>Onboarding</option>
-              <option>Support</option>
-              <option>Renewal</option>
-              <option>At-risk</option>
-              <option>Expansion</option>
-              <option>Loyalty</option>
-            </select>
-          </div>
-          <div class="setup-field">
-            <label class="setup-label">Sentiment score (0–100)</label>
-            <input class="setup-input" id="s2-sentiment" type="number" value="70" min="0" max="100">
+            <label class="setup-label">Current governance coverage (0–100)</label>
+            <input class="setup-input" id="s2-coverage" type="number" value="60" min="0" max="100">
           </div>
           <div class="setup-field setup-field-wide">
-            <label class="setup-label">Persona / notes</label>
-            <input class="setup-input" id="s2-persona" type="text" placeholder="e.g. High-value subscriber, low tolerance for friction.">
+            <label class="setup-label">Description / notes</label>
+            <input class="setup-input" id="s2-desc" type="text" placeholder="e.g. Customer records — contains PII, in PCI-DSS scope.">
           </div>
         </div>
-        <button class="btn btn-o" id="s2-add-btn">+ Add customer</button>
+        <button class="btn btn-o" id="s2-add-btn">+ Add source</button>
       </div>
-      <div id="s2-cust-list" class="setup-cust-list"></div>
+      <div id="s2-src-list" class="setup-cust-list"></div>
       <div class="setup-actions">
         <button class="btn btn-o" id="s2-back">← Back</button>
         <button class="btn btn-p" id="s2-next">Continue →</button>
       </div>
     </div>
 
-    <!-- Step 3 — Data source & launch -->
+    <!-- Step 3 — Data feed & launch -->
     <div class="setup-step" id="setup-step-3">
       <div class="setup-eyebrow">Step 3 of 3</div>
-      <div class="setup-title">Connect your data source</div>
-      <div class="setup-sub">Synapse fetches real customers, issues and journeys from your data source — nothing is simulated. Required if you didn't add customers in step 2.</div>
+      <div class="setup-title">Connect your data feed</div>
+      <div class="setup-sub">Synapse discovers real assets, sources and lineage from your data feed — nothing is simulated. Required if you didn't register sources in step 2.</div>
       <div class="setup-fields">
         <div class="setup-field">
-          <label class="setup-label">Data source URL</label>
-          <input class="setup-input" id="s3-data-url" type="url" placeholder="https://api.your-company.com/synapse-feed">
-          <div class="setup-hint">Polled every 20 seconds. Must return JSON — either <code>{"customers":[…], "issues":[…], "journeys":[…]}</code> or a bare array of issue records.</div>
+          <label class="setup-label">Data feed URL</label>
+          <input class="setup-input" id="s3-data-url" type="url" placeholder="https://api.your-company.com/synapse-estate">
+          <div class="setup-hint">Polled every 20 seconds. Must return JSON — either <code>{"sources":[…], "assets":[…], "flows":[…]}</code> or a bare array of asset records.</div>
         </div>
         <div class="setup-field">
           <label class="setup-label">Autonomy level</label>
           <select class="setup-input" id="s3-autonomy">
-            <option value="full" selected>Full auto — fix every issue the moment it's detected</option>
-            <option value="guarded">Guarded — auto-fix, but hold high-risk actions for my approval</option>
-            <option value="manual">Manual — hold every action for my approval</option>
+            <option value="full" selected>Full auto — classify, label &amp; govern every asset automatically</option>
+            <option value="guarded">Guarded — auto-govern, but hold high-risk remediations for a steward</option>
+            <option value="manual">Manual — hold every remediation for steward approval</option>
           </select>
         </div>
         <div class="setup-field">
           <label class="setup-label">AI service URL <span class="setup-optional">optional</span></label>
           <input class="setup-input" id="s3-api-url" type="url" placeholder="https://your-backend.example.com/claude  (proxy that holds your Anthropic key)">
-          <div class="setup-hint">Used by the AI Assistant chat. Leave blank to call the Claude API directly — you'll be asked for an API key the first time you chat.</div>
+          <div class="setup-hint">Powers live classification and the Data Assistant. Leave blank to call the Claude API directly — you'll be asked for an API key the first time it's needed.</div>
         </div>
       </div>
       <div class="setup-actions">
@@ -203,12 +183,12 @@
 <div id="topbar">
   <div class="ham" id="ham"><span></span><span></span><span></span></div>
   <div class="tb-logo"><span class="tb-logo-icon"><img src="LOGO.png" alt="Synapse logo"></span>Synapse</div>
-  <div class="tb-badge">Autonomous Orchestration</div>
+  <div class="tb-badge">Data Governance Cloud</div>
   <div class="tb-spacer"></div>
-  <div class="engine-pill" id="engine-pill" title="Pause / resume the orchestration engine">
+  <div class="engine-pill" id="engine-pill" title="Pause / resume the governance engine">
     <span class="pulse" id="engine-dot"></span><span id="engine-label">Engine live</span>
   </div>
-  <button class="tb-settings" id="btn-settings" title="Settings — data source &amp; AI service URLs">⚙</button>
+  <button class="tb-settings" id="btn-settings" title="Settings — data feed &amp; AI service URLs">⚙</button>
   <div class="tb-avatar" title="Profile">KN</div>
 </div>
 
@@ -219,14 +199,14 @@
     <div class="setup-sub">Connect or change your data endpoints at any time. Changes take effect immediately.</div>
     <div class="setup-fields">
       <div class="setup-field">
-        <label class="setup-label">Data source URL</label>
-        <input class="setup-input" id="set-data-url" type="url" placeholder="https://api.your-company.com/synapse-feed">
-        <div class="setup-hint">Polled every 20 seconds. Must return JSON — either <code>{"customers":[…], "issues":[…], "journeys":[…]}</code> or a bare array of issue records.</div>
+        <label class="setup-label">Data feed URL</label>
+        <input class="setup-input" id="set-data-url" type="url" placeholder="https://api.your-company.com/synapse-estate">
+        <div class="setup-hint">Polled every 20 seconds. Must return JSON — either <code>{"sources":[…], "assets":[…], "flows":[…]}</code> or a bare array of asset records.</div>
       </div>
       <div class="setup-field">
         <label class="setup-label">AI service URL <span class="setup-optional">optional</span></label>
         <input class="setup-input" id="set-api-url" type="url" placeholder="https://your-backend.example.com/claude  (proxy that holds your Anthropic key)">
-        <div class="setup-hint">Used for live agent runs and the AI Assistant chat. Leave blank to call the Claude API directly — you'll be asked for an API key.</div>
+        <div class="setup-hint">Powers live classification and the Data Assistant. Leave blank to call the Claude API directly — you'll be asked for an API key.</div>
       </div>
     </div>
     <div class="setup-actions settings-actions">
@@ -242,26 +222,28 @@
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
-  <div class="sb-section">Orchestration</div>
-  <button class="sb-item active" data-view="tower"><span class="icon">⊞</span>Control Tower</button>
-  <button class="sb-item" data-view="issues"><span class="icon">⚡</span>Issue Stream<span class="badge" id="badge-issues">0</span></button>
+  <div class="sb-section">Govern</div>
+  <button class="sb-item active" data-view="map"><span class="icon">⊞</span>Data Map</button>
+  <button class="sb-item" data-view="catalog"><span class="icon">⧉</span>Data Catalog<span class="badge" id="badge-catalog">0</span></button>
+  <button class="sb-item" data-view="lineage"><span class="icon">◈</span>Lineage</button>
+
+  <div class="sb-section">Protect</div>
+  <button class="sb-item" data-view="risks"><span class="icon">⚡</span>Risk &amp; DLP<span class="badge" id="badge-risks">0</span></button>
   <button class="sb-item" data-view="approvals"><span class="icon">✋</span>Approvals<span class="badge badge-warn" id="badge-approvals" style="display:none">0</span></button>
-  <button class="sb-item" data-view="journeys"><span class="icon">◈</span>Journeys</button>
 
   <div class="sb-section">Intelligence</div>
-  <button class="sb-item" data-view="customers"><span class="icon">⬡</span>Customer 360</button>
-  <button class="sb-item" data-view="chat"><span class="icon">✦</span>AI Assistant</button>
+  <button class="sb-item" data-view="chat"><span class="icon">✦</span>Data Assistant</button>
 
   <div class="sb-section">Trust</div>
-  <button class="sb-item" data-view="governance"><span class="icon">🛡</span>Governance</button>
-  <button class="sb-item" data-view="value"><span class="icon">📈</span>Value Hub</button>
+  <button class="sb-item" data-view="compliance"><span class="icon">📈</span>Compliance</button>
+  <button class="sb-item" data-view="governance"><span class="icon">🛡</span>Audit &amp; Policy</button>
 
   <div class="sb-bottom">
     <div class="sb-user">
       <div class="tb-avatar">KN</div>
       <div class="sb-user-info">
         <div class="sb-user-name">Kneuralabs</div>
-        <div class="sb-user-role">Experience Operator</div>
+        <div class="sb-user-role">Data Steward</div>
       </div>
     </div>
   </div>
@@ -270,12 +252,12 @@
 <!-- MAIN -->
 <main id="main">
 
-  <!-- CONTROL TOWER -->
-  <div class="view active" id="v-tower">
+  <!-- DATA MAP -->
+  <div class="view active" id="v-map">
     <div class="dash-header">
       <div>
-        <div class="dash-title">Agentic AI <span>Control Tower</span></div>
-        <div class="dash-sub">Autonomous agents detecting and resolving customer problems across every channel — in real time.</div>
+        <div class="dash-title">Data <span>Map</span></div>
+        <div class="dash-sub">Autonomous scanners discovering, classifying and governing data across your entire estate — in real time.</div>
       </div>
       <div class="autonomy-ctl">
         <span class="autonomy-lbl">Autonomy</span>
@@ -286,43 +268,43 @@
         </div>
       </div>
     </div>
-    <div class="kpi-grid" id="tower-kpis"></div>
+    <div class="kpi-grid" id="map-kpis"></div>
     <div class="two-col">
       <div class="panel">
-        <div class="panel-title">Agent Fleet <span class="eyebrow">Multi-agent collaboration</span></div>
-        <div id="agent-fleet"></div>
+        <div class="panel-title">Scanner Fleet <span class="eyebrow">Classification engines</span></div>
+        <div id="scanner-fleet"></div>
       </div>
       <div class="panel">
-        <div class="panel-title">Live Resolution Feed <span class="eyebrow">Autonomous actions</span></div>
-        <div id="tower-feed" class="feed-scroll"></div>
+        <div class="panel-title">Live Scan Feed <span class="eyebrow">Autonomous actions</span></div>
+        <div id="map-feed" class="feed-scroll"></div>
       </div>
     </div>
     <div class="panel">
-      <div class="panel-title">Experience Channels <span class="eyebrow">Signal health</span></div>
-      <div class="channel-grid" id="channel-grid"></div>
+      <div class="panel-title">Data Sources <span class="eyebrow">Governance health</span></div>
+      <div class="channel-grid" id="source-grid"></div>
     </div>
   </div>
 
-  <!-- ISSUE STREAM -->
-  <div class="view" id="v-issues">
+  <!-- RISK & DLP -->
+  <div class="view" id="v-risks">
     <div class="dash-header">
       <div>
-        <div class="dash-title">Issue <span>Stream</span></div>
-        <div class="dash-sub">Every customer problem, detected and resolved by the agent pipeline.</div>
+        <div class="dash-title">Risk &amp; <span>Data Loss Prevention</span></div>
+        <div class="dash-sub">Every at-risk asset, classified and remediated by the governance pipeline.</div>
       </div>
     </div>
     <div class="issue-cols">
       <div class="issue-list-wrap">
-        <div class="issue-filters" id="issue-filters">
+        <div class="issue-filters" id="risk-filters">
           <button class="chip on" data-f="all">All</button>
-          <button class="chip" data-f="open">In progress</button>
+          <button class="chip" data-f="open">In pipeline</button>
           <button class="chip" data-f="approval">Needs approval</button>
-          <button class="chip" data-f="resolved">Resolved</button>
+          <button class="chip" data-f="governed">Governed</button>
         </div>
-        <div id="issue-list"></div>
+        <div id="risk-list"></div>
       </div>
-      <div class="panel issue-detail" id="issue-detail">
-        <div class="empty-hint">Select an issue to see the autonomous resolution timeline.</div>
+      <div class="panel issue-detail" id="risk-detail">
+        <div class="empty-hint">Select an asset to see its classification &amp; governance timeline.</div>
       </div>
     </div>
   </div>
@@ -331,98 +313,103 @@
   <div class="view" id="v-approvals">
     <div class="dash-header">
       <div>
-        <div class="dash-title">Human-in-the-Loop <span>Approvals</span></div>
-        <div class="dash-sub">High-risk autonomous actions held for your decision, per governance guardrails.</div>
+        <div class="dash-title">Steward <span>Approvals</span></div>
+        <div class="dash-sub">High-risk remediations held for your decision, per governance guardrails.</div>
       </div>
     </div>
     <div id="approval-list"></div>
   </div>
 
-  <!-- JOURNEYS -->
-  <div class="view" id="v-journeys">
+  <!-- LINEAGE -->
+  <div class="view" id="v-lineage">
     <div class="dash-header">
       <div>
-        <div class="dash-title">Journey <span>Engine</span></div>
-        <div class="dash-sub">Orchestrated journeys with next-best-action recommendations per stage.</div>
+        <div class="dash-title">Data <span>Lineage</span></div>
+        <div class="dash-sub">How data flows from source through transformation to destination — with next-best governance actions.</div>
       </div>
     </div>
-    <div id="journey-list"></div>
+    <div id="flow-list"></div>
   </div>
 
-  <!-- CUSTOMER 360 -->
-  <div class="view" id="v-customers">
+  <!-- DATA CATALOG -->
+  <div class="view" id="v-catalog">
     <div class="dash-header">
       <div>
-        <div class="dash-title">Customer <span>Digital Twins</span></div>
-        <div class="dash-sub">Unified context across customers, interactions and operations.</div>
+        <div class="dash-title">Data <span>Catalog</span></div>
+        <div class="dash-sub">Every scanned asset — searchable, classified, and labeled for sensitivity.</div>
       </div>
+      <input class="setup-input catalog-search" id="catalog-search" type="search" placeholder="Search assets, classifications, labels…">
     </div>
-    <div class="proj-grid" id="customer-grid"></div>
-    <div class="panel issue-detail show" id="customer-detail" style="display:none"></div>
+    <div class="proj-grid" id="catalog-grid"></div>
+    <div class="panel issue-detail show" id="catalog-detail" style="display:none"></div>
   </div>
 
-  <!-- AI ASSISTANT -->
+  <!-- DATA ASSISTANT -->
   <div class="view" id="v-chat">
     <div class="chat-header">
       <div class="chat-avatar">✦</div>
-      <div><div class="chat-title">Synapse AI</div><div class="chat-subtitle">Experience Orchestration Assistant</div></div>
+      <div><div class="chat-title">Synapse AI</div><div class="chat-subtitle">Data Governance &amp; Compliance Assistant</div></div>
       <div class="chat-online"></div>
     </div>
     <div class="chat-msgs" id="chat-msgs">
       <div class="msg ai">
-        <div class="msg-av">L</div>
-        <div class="msg-bubble">Hi! I'm your Synapse orchestration assistant. I can explain why an issue was resolved a certain way, recommend next best actions, draft customer communications, and answer questions about your live operations.<br><br>What would you like to know?</div>
+        <div class="msg-av">S</div>
+        <div class="msg-bubble">Hi! I'm your Synapse governance assistant. I can explain why an asset was classified a certain way, recommend policies, assess your exposure to a regulation, draft a DPIA, and answer questions about your live data estate.<br><br>What would you like to know?</div>
       </div>
     </div>
     <div class="chat-suggestions" id="chat-suggestions">
-      <button class="sug-chip">Summarize today's autonomous resolutions</button>
-      <button class="sug-chip">Which customers are at churn risk and why?</button>
-      <button class="sug-chip">Draft an apology email for a delivery delay</button>
+      <button class="sug-chip">Summarize today's classifications &amp; risks</button>
+      <button class="sug-chip">Which assets are over-shared and sensitive?</button>
+      <button class="sug-chip">Where are we exposed under GDPR?</button>
       <button class="sug-chip">How should I tune the approval guardrails?</button>
     </div>
     <div class="chat-bar">
-      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask anything about your customers and operations…"></textarea>
+      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask anything about your data estate and compliance…"></textarea>
       <button class="chat-send" id="chat-send"><svg width="16" height="16" viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg></button>
     </div>
   </div>
 
-  <!-- GOVERNANCE -->
-  <div class="view" id="v-governance">
+  <!-- COMPLIANCE -->
+  <div class="view" id="v-compliance">
     <div class="dash-header">
       <div>
-        <div class="dash-title">Governance & <span>Trust</span></div>
-        <div class="dash-sub">Guardrails, oversight and a full audit trail of every autonomous action.</div>
+        <div class="dash-title">Compliance <span>Manager</span></div>
+        <div class="dash-sub">Live posture across the regulations and standards that govern your data.</div>
       </div>
     </div>
+    <div class="kpi-grid" id="compliance-kpis"></div>
     <div class="two-col">
       <div class="panel">
-        <div class="panel-title">Guardrails <span class="eyebrow">Responsible AI</span></div>
-        <div id="guardrail-list"></div>
+        <div class="panel-title">Framework Readiness <span class="eyebrow">Derived from live coverage</span></div>
+        <div id="framework-list"></div>
       </div>
       <div class="panel">
-        <div class="panel-title">Audit Trail <span class="eyebrow">Logs · Alerts · Reports</span></div>
-        <div id="audit-list" class="feed-scroll"></div>
+        <div class="panel-title">Recently Governed <span class="eyebrow">Live</span></div>
+        <div id="compliance-outcomes"></div>
       </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Exposure Remediated by Scanner <span class="eyebrow">Today</span></div>
+      <div id="scanner-value"></div>
     </div>
   </div>
 
-  <!-- VALUE HUB -->
-  <div class="view" id="v-value">
+  <!-- AUDIT & POLICY -->
+  <div class="view" id="v-governance">
     <div class="dash-header">
       <div>
-        <div class="dash-title">Business <span>Value Hub</span></div>
-        <div class="dash-sub">Close the loop: insights → actions → outcomes.</div>
+        <div class="dash-title">Audit &amp; <span>Policy</span></div>
+        <div class="dash-sub">Governance guardrails, oversight and a full audit trail of every autonomous action.</div>
       </div>
     </div>
-    <div class="kpi-grid" id="value-kpis"></div>
     <div class="two-col">
       <div class="panel">
-        <div class="panel-title">Value Recovered by Agent <span class="eyebrow">Today</span></div>
-        <div id="value-agents"></div>
+        <div class="panel-title">Policies <span class="eyebrow">Responsible governance</span></div>
+        <div id="policy-list"></div>
       </div>
       <div class="panel">
-        <div class="panel-title">Resolution Outcomes <span class="eyebrow">Live</span></div>
-        <div id="value-outcomes"></div>
+        <div class="panel-title">Audit Trail <span class="eyebrow">Scans · Alerts · Decisions</span></div>
+        <div id="audit-list" class="feed-scroll"></div>
       </div>
     </div>
   </div>

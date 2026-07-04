@@ -1,17 +1,17 @@
-import {GUARDRAILS} from '../data.js';
+import {POLICIES} from '../data.js';
 import {state} from '../engine.js';
 import {esc, fmtTimeSec} from '../utils.js';
 import {liveView} from '../live.js';
 
-const KIND_LABEL = {detect:'DETECT', action:'ACTION', resolve:'RESOLVE', approval:'HITL', governance:'POLICY'};
+const KIND_LABEL = {discover:'DISCOVER', classify:'CLASSIFY', govern:'GOVERN', approval:'STEWARD', policy:'POLICY'};
 
-function renderGuardrails(){
-  document.getElementById('guardrail-list').innerHTML = GUARDRAILS.map(g=>`
+function renderPolicies(){
+  document.getElementById('policy-list').innerHTML = POLICIES.map(p=>`
     <div class="ws-row">
       <span class="ws-dot" style="background:var(--green)"></span>
       <div style="flex:1;min-width:0">
-        <div class="ws-name">${esc(g.name)}</div>
-        <div class="agent-scope">${esc(g.policy)}</div>
+        <div class="ws-name">${esc(p.name)}</div>
+        <div class="agent-scope">${esc(p.policy)}</div>
       </div>
       <span class="agent-state busy">enforced</span>
     </div>`).join('');
@@ -27,6 +27,6 @@ function renderAudit(){
 }
 
 export function initGovernance(){
-  renderGuardrails(); // guardrails are static — render once
+  renderPolicies(); // policies are static — render once
   liveView('governance', renderAudit, 'audit');
 }
