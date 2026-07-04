@@ -46,7 +46,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 .view.active{display:flex}
 
 /* ── DASHBOARD-STYLE VIEWS ── */
-#v-tower,#v-issues,#v-approvals,#v-journeys,#v-customers,#v-governance,#v-value{padding:32px;gap:24px}
+#v-map,#v-risks,#v-approvals,#v-lineage,#v-catalog,#v-governance,#v-compliance{padding:32px;gap:24px}
 .dash-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px}
 .dash-title{font-family:'Inter',sans-serif;font-weight:800;font-size:1.6rem;letter-spacing:-.03em}
 .dash-title span{color:var(--periwinkle)}
@@ -165,14 +165,17 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 
 /* ── FEED ── */
 .feed-scroll{max-height:340px;overflow-y:auto}
-.act-dot.detect{background:var(--accent)}
-.act-dot.resolve{background:var(--green)}
+.act-dot.discover{background:var(--accent)}
+.act-dot.classify{background:var(--periwinkle)}
+.act-dot.govern{background:var(--green)}
 .act-dot.approval{background:#FFD97D}
+.act-dot.policy{background:var(--slate)}
 .audit-kind{font-size:.58rem;letter-spacing:.08em;padding:2px 7px;border-radius:4px;border:1px solid var(--border);color:var(--slate);flex-shrink:0;margin-top:2px;font-family:'Inter',sans-serif;font-weight:700}
-.audit-kind.k-detect{color:var(--accent);border-color:rgba(255,107,107,.3)}
-.audit-kind.k-resolve{color:var(--green);border-color:rgba(79,255,176,.3)}
+.audit-kind.k-discover{color:var(--accent);border-color:rgba(255,107,107,.3)}
+.audit-kind.k-classify{color:var(--periwinkle);border-color:var(--border)}
+.audit-kind.k-govern{color:var(--green);border-color:rgba(79,255,176,.3)}
 .audit-kind.k-approval{color:#FFD97D;border-color:rgba(255,217,125,.3)}
-.audit-kind.k-governance{color:var(--periwinkle);border-color:var(--border)}
+.audit-kind.k-policy{color:var(--slate);border-color:var(--border)}
 
 /* ── ISSUE STREAM ── */
 .issue-cols{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
@@ -221,10 +224,26 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
 .nba{font-size:.78rem;color:var(--slate);line-height:1.6;margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px}
 .nba-tag{display:block;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:4px;font-weight:700}
 
-/* ── SENTIMENT ── */
-.prog-fill.sent-good{background:var(--green)}
-.prog-fill.sent-mid{background:#FFD97D}
-.prog-fill.sent-bad{background:var(--accent)}
+/* ── HEALTH / READINESS BARS ── */
+.prog-fill.sent-good,.ws-bar.sent-good{background:var(--green)}
+.prog-fill.sent-mid,.ws-bar.sent-mid{background:#FFD97D}
+.prog-fill.sent-bad,.ws-bar.sent-bad{background:var(--accent)}
+
+/* ── SENSITIVITY LABELS ── */
+.slabel{font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:100px;border:1px solid var(--border);white-space:nowrap;flex-shrink:0;font-weight:700}
+.slabel.sl-restricted{color:#FF6B6B;border-color:rgba(255,107,107,.4);background:rgba(255,107,107,.1)}
+.slabel.sl-confidential-high{color:#FFB067;border-color:rgba(255,176,103,.4);background:rgba(255,176,103,.1)}
+.slabel.sl-confidential{color:#FFD97D;border-color:rgba(255,217,125,.35);background:rgba(255,217,125,.08)}
+.slabel.sl-general{color:var(--periwinkle);border-color:var(--border);background:var(--periwinkle-dim)}
+.slabel.sl-public{color:var(--green);border-color:rgba(79,255,176,.3);background:rgba(79,255,176,.08)}
+.slabel.sl-none{color:var(--slate);border-color:var(--border)}
+
+/* ── DATA CATALOG ── */
+.catalog-search{max-width:320px;width:100%}
+.catalog-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin-top:14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.cm-item{display:flex;flex-direction:column;gap:2px;min-width:0}
+.cm-k{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--slate)}
+.cm-v{font-size:.82rem;color:var(--chalk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* ── SIDEBAR BADGE WARN ── */
 .sb-item .badge.badge-warn{background:#FFD97D;color:#07091C}
@@ -249,7 +268,7 @@ body{font-family:'Inter',sans-serif;font-weight:300;background:var(--bg);color:v
   .ham{display:flex}
   .engine-pill #engine-label{display:none}
   .two-col{grid-template-columns:1fr}
-  #v-tower,#v-issues,#v-approvals,#v-journeys,#v-customers,#v-governance,#v-value{padding:20px;gap:16px}
+  #v-map,#v-risks,#v-approvals,#v-lineage,#v-catalog,#v-governance,#v-compliance{padding:20px;gap:16px}
   .proj-grid,#journey-list{grid-template-columns:1fr}
   .kpi-grid{grid-template-columns:1fr 1fr}
   .msg{max-width:90%}

@@ -1,13 +1,13 @@
 import {nav, toggleSidebar} from './router.js';
 import {startEngine} from './engine.js';
-import {initTower} from './views/tower.js';
-import {initIssues} from './views/issues.js';
+import {initMap} from './views/tower.js';
+import {initRisks} from './views/issues.js';
 import {initApprovals} from './views/approvals.js';
-import {initJourneys} from './views/journeys.js';
-import {initCustomers} from './views/customers.js';
+import {initLineage} from './views/journeys.js';
+import {initCatalog} from './views/customers.js';
 import {initChat} from './views/chat.js';
 import {initGovernance} from './views/governance.js';
-import {initValue} from './views/value.js';
+import {initCompliance} from './views/value.js';
 import {isSetupDone, runSetupWizard, applyOrgToUI} from './setup.js';
 import {initSettings} from './settings.js';
 
@@ -19,14 +19,14 @@ document.getElementById('sidebar').addEventListener('click', e=>{
   nav(btn.dataset.view, btn);
 });
 
-initTower();
-initIssues();
+initMap();
+initRisks();
 initApprovals();
-initJourneys();
-initCustomers();
+initLineage();
+initCatalog();
 initChat();
 initGovernance();
-initValue();
+initCompliance();
 initSettings();
 
 if (isSetupDone()) {

@@ -1,5 +1,6 @@
 import {state, approve, reject} from '../engine.js';
-import {STAGES, CHANNELS} from '../data.js';
+import {STAGES} from '../data.js';
+import {assetIcon, sensPill, sensName} from '../labels.js';
 import {esc, mdLite, errorHtml, toast, fmtMoney, fmtTimeSec} from '../utils.js';
 import {callClaude} from '../api.js';
 import {liveView} from '../live.js';
@@ -7,69 +8,68 @@ import {liveView} from '../live.js';
 let filter = 'all';
 let selectedId = null;
 
-const channelIcon = id => (CHANNELS.find(c=>c.id===id)||{}).icon || '•';
-
 function visible(){
-  return state.issues.filter(i=>{
-    if(filter==='open') return i.stage<4 && !i.needsApproval;
-    if(filter==='approval') return i.needsApproval;
-    if(filter==='resolved') return i.stage===4;
+  return state.assets.filter(a=>{
+    if(filter==='open') return a.stage<4 && !a.needsApproval;
+    if(filter==='approval') return a.needsApproval;
+    if(filter==='governed') return a.stage===4;
     return true;
   });
 }
 
-function stageDots(issue){
+function stageDots(asset){
   return `<div class="stage-track">` + STAGES.map((s,idx)=>{
-    const cls = idx < issue.stage || issue.stage === 4 ? 'done' : idx === issue.stage ? (issue.needsApproval?'held':'now') : '';
+    const cls = idx < asset.stage || asset.stage === 4 ? 'done' : idx === asset.stage ? (asset.needsApproval?'held':'now') : '';
     return `<span class="stage-dot ${cls}" title="${s}"></span>`;
   }).join('<span class="stage-line"></span>') + `</div>`;
 }
 
 function renderList(){
   const items = visible();
-  document.getElementById('issue-list').innerHTML = items.map(i=>`
-    <div class="issue-card ${i.id===selectedId?'sel':''} ${i.needsApproval?'held-card':''}" data-id="${i.id}">
+  document.getElementById('risk-list').innerHTML = items.map(a=>`
+    <div class="issue-card ${a.id===selectedId?'sel':''} ${a.needsApproval?'held-card':''}" data-id="${a.id}">
       <div class="issue-top">
-        <span class="issue-ch">${channelIcon(i.channel)}</span>
-        <span class="issue-type">${esc(i.type)}</span>
-        <span class="sev sev-${i.severity}">${i.severity}</span>
+        <span class="issue-ch">${assetIcon(a.assetType)}</span>
+        <span class="issue-type">${esc(a.name)}</span>
+        <span class="sev sev-${a.risk}">${a.risk} risk</span>
       </div>
-      <div class="issue-meta">${i.id} · ${esc(i.customer.name)} · ${esc(i.customer.segment)}</div>
-      ${stageDots(i)}
-      <div class="issue-stage-lbl">${i.needsApproval ? '✋ Awaiting human approval' : i.stage===4 ? (i.rejected?'Closed by human':'✓ Resolved autonomously') : STAGES[i.stage]+'…'}</div>
-    </div>`).join('') || '<div class="empty-hint">No issues yet. Issues stream in live from your data source — connect one in setup if you haven\'t.</div>';
+      <div class="issue-meta">${a.id} · ${esc(a.source.name)} · ${sensName(a.sensitivity)} · ${esc(a.exposure)}</div>
+      ${stageDots(a)}
+      <div class="issue-stage-lbl">${a.needsApproval ? '✋ Awaiting steward approval' : a.stage===4 ? (a.rejected?'Held by steward':'✓ Governed autonomously') : STAGES[a.stage]+'…'}</div>
+    </div>`).join('') || '<div class="empty-hint">No assets yet. Assets stream in live from your data feed — connect one in setup if you haven\'t.</div>';
 }
 
 // `preserveDeepDive` keeps any existing AI deep-dive result (or its in-flight
 // spinner) in place across the frequent engine 'change' re-renders. It's reset
-// only when the operator selects a different issue.
+// only when the operator selects a different asset.
 function renderDetail(preserveDeepDive){
-  const el = document.getElementById('issue-detail');
-  const i = state.issues.find(x=>x.id===selectedId);
-  if(!i){ el.innerHTML = '<div class="empty-hint">Select an issue to see the autonomous resolution timeline.</div>'; return; }
+  const el = document.getElementById('risk-detail');
+  const a = state.assets.find(x=>x.id===selectedId);
+  if(!a){ el.innerHTML = '<div class="empty-hint">Select an asset to see its classification &amp; governance timeline.</div>'; return; }
   const deepDiveHtml = preserveDeepDive
     ? (document.getElementById('deepdive-out')?.innerHTML || '') : '';
   el.innerHTML = `
     <div class="detail-head">
       <div>
-        <div class="detail-title">${channelIcon(i.channel)} ${esc(i.type)} <span class="sev sev-${i.severity}">${i.severity}</span></div>
-        <div class="issue-meta">${i.id} · ${esc(i.customer.name)} (${i.customer.id}) · LTV ${fmtMoney(i.customer.ltv)} · risk: ${i.risk}</div>
+        <div class="detail-title">${assetIcon(a.assetType)} ${esc(a.name)} ${sensPill(a.sensitivity)}</div>
+        <div class="issue-meta">${a.id} · ${esc(a.source.name)} · ${esc(a.path)} · ${esc(a.exposure)} · risk: ${a.risk}</div>
       </div>
     </div>
-    <p class="detail-desc">${esc(i.detail)}</p>
-    <div class="section-eyebrow">Decision engine playbook</div>
-    <ol class="playbook">${i.playbook.map(p=>`<li>${esc(p)}</li>`).join('')}</ol>
+    ${a.classifications.length ? `<div class="section-eyebrow">Sensitive information types</div>
+      <div class="proj-ws">${a.classifications.map(c=>`<span class="ws-pill">${esc(c)}</span>`).join('')}</div>` : ''}
+    <div class="section-eyebrow">Governance playbook</div>
+    <ol class="playbook">${a.playbook.map(p=>`<li>${esc(p)}</li>`).join('')}</ol>
     <div class="section-eyebrow">Timeline</div>
-    <div class="timeline">${i.stepLog.map(s=>`
+    <div class="timeline">${a.stepLog.map(s=>`
       <div class="tl-item">
         <div class="tl-stage">${esc(s.stage)}</div>
         <div class="tl-note">${esc(s.note)}</div>
         <div class="tl-time">${fmtTimeSec(s.time)}</div>
       </div>`).join('')}</div>
-    ${i.needsApproval ? `
+    ${a.needsApproval ? `
       <div class="approve-row">
-        <button class="btn btn-p" data-act="approve">Approve action</button>
-        <button class="btn btn-o" data-act="reject">Reject & handle manually</button>
+        <button class="btn btn-p" data-act="approve">Approve remediation</button>
+        <button class="btn btn-o" data-act="reject">Reject &amp; handle manually</button>
       </div>` : ''}
     <div class="approve-row">
       <button class="btn btn-o" data-act="deepdive">✦ AI deep-dive</button>
@@ -77,43 +77,43 @@ function renderDetail(preserveDeepDive){
     <div class="ai-prose" id="deepdive-out">${deepDiveHtml}</div>`;
 }
 
-async function deepDive(issue){
+async function deepDive(asset){
   // Re-fetch the output node on each write: a concurrent engine re-render may
-  // have replaced it, and the operator may have switched to another issue.
+  // have replaced it, and the operator may have switched to another asset.
   const setOut = html => {
     const out = document.getElementById('deepdive-out');
-    if(out && selectedId === issue.id) out.innerHTML = html;
+    if(out && selectedId === asset.id) out.innerHTML = html;
   };
-  setOut('<div class="loading-row"><div class="spinner"></div> Analyzing root cause & prevention…</div>');
+  setOut('<div class="loading-row"><div class="spinner"></div> Assessing exposure &amp; remediation…</div>');
   try {
     const reply = await callClaude({max_tokens:600,
-      system:'You are the analysis engine of an autonomous customer-experience platform. Be concise and concrete. Use **bold** for headers only; no other markdown.',
+      system:'You are the analysis engine of an autonomous data-governance platform. Be concise and concrete. Use **bold** for headers only; no other markdown.',
       messages:[{role:'user', content:
-        `Issue: ${issue.type} (${issue.severity} severity, ${issue.channel} channel)\nDetail: ${issue.detail}\nCustomer: ${issue.customer.segment} segment, sentiment ${issue.customer.sentiment}/100, persona: ${issue.customer.persona}\nPlaybook executed: ${issue.playbook.join('; ')}\n\nGive: **Root cause hypothesis**, **Prevention recommendation**, **Customer follow-up** (one short message we could send). Max 150 words.`}]});
+        `Asset: ${asset.name} (${asset.assetType}) in ${asset.source.name}\nSensitivity: ${sensName(asset.sensitivity)}. Exposure: ${asset.exposure}. Risk: ${asset.risk}.\nSensitive types found: ${asset.classifications.join(', ') || 'none'}\nGovernance actions taken: ${asset.playbook.join('; ')}\n\nGive: **Exposure risk**, **Remediation recommendation**, **Regulatory note** (which regulation this implicates and why). Max 150 words.`}]});
     setOut(mdLite(reply));
   } catch(e){
     setOut(errorHtml(e.message));
   }
 }
 
-export function initIssues(){
-  document.getElementById('issue-filters').addEventListener('click', e=>{
+export function initRisks(){
+  document.getElementById('risk-filters').addEventListener('click', e=>{
     const c = e.target.closest('.chip'); if(!c) return;
     filter = c.dataset.f;
-    document.querySelectorAll('#issue-filters .chip').forEach(x=>x.classList.toggle('on', x===c));
+    document.querySelectorAll('#risk-filters .chip').forEach(x=>x.classList.toggle('on', x===c));
     renderList();
   });
-  document.getElementById('issue-list').addEventListener('click', e=>{
+  document.getElementById('risk-list').addEventListener('click', e=>{
     const card = e.target.closest('.issue-card'); if(!card) return;
     selectedId = card.dataset.id;
     renderList(); renderDetail();
   });
-  document.getElementById('issue-detail').addEventListener('click', e=>{
+  document.getElementById('risk-detail').addEventListener('click', e=>{
     const btn = e.target.closest('[data-act]'); if(!btn) return;
-    const i = state.issues.find(x=>x.id===selectedId); if(!i) return;
-    if(btn.dataset.act==='approve'){ approve(i); toast('Action approved — agent resuming.'); }
-    if(btn.dataset.act==='reject'){ reject(i); toast('Action rejected — issue routed to manual handling.'); }
-    if(btn.dataset.act==='deepdive') deepDive(i);
+    const a = state.assets.find(x=>x.id===selectedId); if(!a) return;
+    if(btn.dataset.act==='approve'){ approve(a); toast('Remediation approved — scanner resuming.'); }
+    if(btn.dataset.act==='reject'){ reject(a); toast('Remediation rejected — asset held for manual handling.'); }
+    if(btn.dataset.act==='deepdive') deepDive(a);
   });
-  liveView('issues', ()=>{ renderList(); renderDetail(true); });
+  liveView('risks', ()=>{ renderList(); renderDetail(true); });
 }

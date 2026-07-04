@@ -2,7 +2,7 @@
 // navigation — the view-lifecycle bridge (live.js) uses this so hidden views
 // can skip rendering until the operator brings them on screen.
 
-let currentView = 'tower'; // matches the .view.active element in index.html
+let currentView = 'map'; // matches the .view.active element in index.html
 const navListeners = [];
 
 export const getView = () => currentView;
